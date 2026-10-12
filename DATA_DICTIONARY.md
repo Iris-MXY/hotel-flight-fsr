@@ -1,105 +1,105 @@
-# Data Dictionary
+# 数据字典
 
-All hotel files are UTF-8 CSV with a header row. Flight aggregates use the
-schemas described below. SHA-256 checksums are at the end of this document.
+酒店数据均为带表头的 UTF-8 CSV 文件；机票聚合数据使用下述模式。
+SHA-256 校验和列于文末。
 
 ---
 
-## Hotel
+## 酒店
 
 ### `data/hotel/cleaned_hotel_prices.csv`
 
-Cleaned daily price panel — the primary table for feature and label construction.
+清洗后的日价格面板——构建特征与标签的主表。
 
-| Column | Type | Notes |
+| 列名 | 类型 | 说明 |
 |---|---|---|
-| `date` | string | `YYYY/M/D`, range 2024-03-01 … 2024-06-30 |
-| `hotelCode` | string | Hotel id, e.g. `H00003179890` |
-| `price` | float | Nightly rate in **fen** (1 CNY = 100 fen) |
+| `date` | 字符串 | `YYYY/M/D`，范围 2024-03-01 … 2024-06-30 |
+| `hotelCode` | 字符串 | 酒店编号，例如 `H00003179890` |
+| `price` | 浮点 | 每晚房价，单位**分**（1 元 = 100 分） |
 
-Rows: 1,707,918 · Hotels: 16,257
+行数：1,707,918 · 酒店数：16,257
 
 ### `data/hotel/2024_3.csv` … `2024_6.csv`
 
-Raw daily prices as delivered, one file per month. Same `date` / `hotelCode` /
-`price` columns plus trailing empty columns. Use these to re-derive the cleaned
-panel or to audit cleaning decisions.
+原始日价格，每月一个文件。列为 `date` / `hotelCode` / `price`，另有若干空列。
+用于重新生成清洗面板或审计清洗规则。
 
 ### `data/hotel/hotel_info.csv`
 
-Hotel metadata for competition-density and location features.
+酒店元数据，用于竞争密度与位置特征。
 
-| Column | Type | Notes |
+| 列名 | 类型 | 说明 |
 |---|---|---|
-| `hotelCode` | string | Join key to the price panel |
-| `hotelName` | string | Display name |
-| `hotelLevel` | string | `经济` / `舒适` / `高档` / `豪华` |
-| `lon经度` | float | Longitude |
-| `lat纬度` | float | Latitude |
+| `hotelCode` | 字符串 | 与价格面板的连接键 |
+| `hotelName` | 字符串 | 酒店名称 |
+| `hotelLevel` | 字符串 | `经济` / `舒适` / `高档` / `豪华` |
+| `lon经度` | 浮点 | 经度 |
+| `lat纬度` | 浮点 | 纬度 |
 
-Rows: 86,159 (whole-city directory, wider than the 16,257 priced hotels)
+行数：86,159（全城名录，比有价格记录的 16,257 家更广）
 
 ### `data/hotel/hotel_future_prices.csv`
 
-Derived forward price per hotel.
+每家酒店的派生远期价。
 
-| Column | Type | Notes |
+| 列名 | 类型 | 说明 |
 |---|---|---|
-| `hotelCode` | string | Hotel id |
-| `futurePrice` | float | Forward rate in fen (derived) |
+| `hotelCode` | 字符串 | 酒店编号 |
+| `futurePrice` | 浮点 | 远期价，单位分（派生量） |
 
-Rows: 16,257
+行数：16,257
 
 ---
 
-## Flight
+## 机票
 
 ### `data/flight/flight_routes_real.csv`
 
-Route-level statistics aggregated from DB1B 2024Q2 (routes with ≥ 20 obs).
+由 DB1B 2024Q2 聚合得到的航线级统计（观测数 ≥ 20 的航线）。
 
-| Column | Notes |
+| 列名 | 说明 |
 |---|---|
-| `origin`, `dest`, `route` | OD airport codes and `origin-dest` label |
-| `n_obs` | Ticket observations on the route |
-| `total_pax` | Sum of sampled passengers |
-| `mean_fare`, `std_fare` | Fare level and dispersion (USD) |
+| `origin`、`dest`、`route` | 起讫机场代码及 `origin-dest` 标签 |
+| `n_obs` | 该航线的机票观测数 |
+| `total_pax` | 抽样乘客数之和 |
+| `mean_fare`、`std_fare` | 票价水平与离散度（美元） |
 | `fare_cv` | `std_fare / mean_fare` |
-| `n_carriers` | Distinct reporting carriers |
-| `avg_distance`, `avg_coupons` | Mean miles flown and coupon count |
+| `n_carriers` | 不同申报航司数 |
+| `avg_distance`、`avg_coupons` | 平均飞行英里数与航段数 |
 | `dist_band` | `short` / `medium` / `long` |
-| `carriers_list` | Comma-separated carrier codes |
+| `carriers_list` | 逗号分隔的航司代码 |
 
-Rows: 25,872
+行数：25,872
 
 ### `data/flight/flight_eda_v4_summary.json`
 
-Aggregate EDA over the full DB1B span (2022Q1–2025Q1): dataset totals, global
-fare stats, concentration (carrier HHI, top-4 share), route-volatility stats,
-per-carrier risk table, and per-quarter row/fare counts.
+覆盖 DB1B 全时间段（2022Q1–2025Q1）的聚合 EDA：数据集总量、全局票价统计、
+集中度（航司 HHI、前四份额）、航线波动率统计、分航司风险表、分季度行数 / 票价。
 
 ### `data/flight/empirical_carrier_correlations.json`
 
-Carrier equity-return correlation matrix (9 carriers, 5-year daily log returns,
-2021–2025, 1,192 trading days) used for the flight dependence structure.
+航司权益收益相关阵（9 家航司，5 年日对数收益，2021–2025，1,192 个交易日），
+用于机票池的相依结构。
 
 ### `data/flight/flight_fsr_results_v1.json`
 
-Flight FSR engine output (Monte Carlo paths, tranche losses, stress and
-sensitivity results).
+机票 FSR 引擎输出（蒙特卡洛路径、分层损失、压力与敏感性结果）。
+
+### `data/flight/db1b_manifest.json`
+
+13 个 DB1B 季度的清单：季度、文件名、下载 URL、字节大小，以及总计。
 
 ### `data/provenance/*.py`
 
-Scripts that produced the flight aggregates (`extract_real_routes.py`,
-`flight_eda_v4.py`, `eda_12q_panel.py`, `eda_flight_full.py`). They reference an
-external DB1B directory that is not part of this repository; adjust the path to
-regenerate.
+生成机票聚合数据的脚本（`extract_real_routes.py`、`flight_eda_v4.py`、
+`eda_12q_panel.py`、`eda_flight_full.py`）。它们引用了本仓库之外的 DB1B 目录；
+重建时请先修改该路径。
 
 ---
 
-## SHA-256 checksums
+## SHA-256 校验和
 
-| File | SHA-256 |
+| 文件 | SHA-256 |
 |---|---|
 | `data/hotel/cleaned_hotel_prices.csv` | `0F355AB93A3178B700DF67F01B434621E707D1BD500AFA5743C9C421AB076879` |
 | `data/hotel/2024_3.csv` | `E3F86B3B6161123012135FBA810725DB7F8AFDC16EAE945745EF142BBB22236B` |

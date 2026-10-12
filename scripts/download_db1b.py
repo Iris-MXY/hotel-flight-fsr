@@ -1,17 +1,15 @@
-"""Download the 13 quarterly U.S. DOT DB1B (Market) files used by this project.
+"""下载本项目使用的 13 个季度美国交通部 DB1B（Market）原始文件。
 
-The raw zips are 78-105 MB each (about 1.27 GB total) and are intentionally not
-stored in the repository. This script fetches them into ``data/raw/db1b/``
-(gitignored), verifies each file against the byte count recorded in
-``data/flight/db1b_manifest.json``, and can optionally unzip them in place.
+原始压缩包每个 78–105 MB（合计约 1.27 GB），因此**不存入本仓库**。
+本脚本把它们下载到 ``data/raw/db1b/``（已被 gitignore），并按
+``data/flight/db1b_manifest.json`` 中记录的字节数逐个校验，可选地就地解压。
 
-Downloads are resumable: if a partial file exists, only the remaining bytes are
-requested, so the script is safe to stop and re-run. BTS can be slow and will
-sometimes drop a connection; just run the script again to continue.
+下载支持断点续传：若存在未完成的文件，只请求剩余字节，因此可随时中断后重新运行。
+BTS 有时较慢并会断开连接，重新运行脚本即可继续。
 
-Usage:
-    python scripts/download_db1b.py                 # fetch + verify, no unzip
-    python scripts/download_db1b.py --unzip         # also unpack the CSVs
+用法：
+    python scripts/download_db1b.py                 # 下载 + 校验，不解压
+    python scripts/download_db1b.py --unzip         # 同时解压出 CSV
     python scripts/download_db1b.py --quarters 2024_2 2025_1
 """
 
@@ -43,14 +41,14 @@ def human(n: float) -> str:
 
 
 def download(url: str, dest: Path, expected: int, retries: int = 4) -> None:
-    """Resume-download ``url`` to ``dest`` until it reaches ``expected`` bytes."""
+    """把 ``url`` 断点续传到 ``dest``，直到达到 ``expected`` 字节。"""
     for attempt in range(1, retries + 1):
         have = dest.stat().st_size if dest.exists() else 0
         if have == expected:
-            print(f"  already complete ({human(have)})")
+            print(f"  已完整（{human(have)}）")
             return
         if have > expected:
-            print(f"  local file larger than expected; restarting ({human(have)})")
+            print(f"  本地文件大于预期，重新下载（{human(have)}）")
             dest.unlink()
             have = 0
 
@@ -80,23 +78,23 @@ def download(url: str, dest: Path, expected: int, retries: int = 4) -> None:
                     )
                 print()
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
-            print(f"\n  attempt {attempt}/{retries} failed: {exc}")
+            print(f"\n  第 {attempt}/{retries} 次尝试失败：{exc}")
             time.sleep(min(5 * attempt, 20))
             continue
 
         size = dest.stat().st_size
         if size == expected:
             return
-        print(f"  short read: {human(size)} of {human(expected)}; resuming")
+        print(f"  读取不完整：{human(size)} / {human(expected)}，继续续传")
         time.sleep(2)
 
-    raise RuntimeError(f"could not download {url} after {retries} attempts")
+    raise RuntimeError(f"{url} 在 {retries} 次尝试后仍未下载完成")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--quarters", nargs="*", help="subset, e.g. 2024_2 2025_1")
-    ap.add_argument("--unzip", action="store_true", help="extract each zip after download")
+    ap.add_argument("--quarters", nargs="*", help="子集，例如 2024_2 2025_1")
+    ap.add_argument("--unzip", action="store_true", help="下载后解压每个压缩包")
     args = ap.parse_args()
 
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -107,24 +105,24 @@ def main() -> int:
         entries = [e for e in entries if e["quarter"] in wanted]
         missing = wanted - {e["quarter"] for e in entries}
         if missing:
-            print(f"unknown quarter(s): {', '.join(sorted(missing))}", file=sys.stderr)
+            print(f"未知季度：{', '.join(sorted(missing))}", file=sys.stderr)
             return 2
 
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     total = sum(e["bytes"] for e in entries)
-    print(f"Fetching {len(entries)} DB1B file(s) into {RAW_DIR}  ({human(total)} total)")
+    print(f"准备下载 {len(entries)} 个 DB1B 文件到 {RAW_DIR}（共 {human(total)}）")
 
     for i, entry in enumerate(entries, 1):
         name, expected = entry["file"], entry["bytes"]
         dest = RAW_DIR / name
-        print(f"\n[{i}/{len(entries)}] {entry['quarter']}  ({human(expected)})")
+        print(f"\n[{i}/{len(entries)}] {entry['quarter']}  （{human(expected)}）")
         download(template.format(quarter=entry["quarter"]), dest, expected)
         if args.unzip:
-            print(f"  unzipping {name}")
+            print(f"  解压 {name}")
             with zipfile.ZipFile(dest) as zf:
                 zf.extractall(dest.with_suffix(""))
 
-    print(f"\nDone. Files in {RAW_DIR}")
+    print(f"\n完成。文件位于 {RAW_DIR}")
     return 0
 
 

@@ -4,7 +4,7 @@
   "bulk_url_template": "https://transtats.bts.gov/PREZIP/Origin_and_Destination_Survey_DB1BMarket_{quarter}.zip",
   "quarter_count": 13,
   "total_bytes": 1273534805,
-  "note": "Raw quarterly zips are 78-105 MB each; three exceed GitHub's 100 MiB per-file limit and none are stored in this repository. Run scripts/download_db1b.py to fetch, size-verify and unpack them into data/raw/db1b/ (gitignored).",
+  "note": "原始季度压缩包每个 78-105 MB，其中三个超过 GitHub 单文件 100 MiB 上限，因此都不存放在本仓库。请运行 scripts/download_db1b.py 下载、按字节数校验并解压到 data/raw/db1b/（已被 gitignore）。",
   "quarters": [
     { "quarter": "2022_1", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_1.zip", "bytes": 81864513 },
     { "quarter": "2022_2", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_2.zip", "bytes": 99061514 },

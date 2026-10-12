@@ -1,90 +1,81 @@
-# Hotel & Flight FSR — Research Data
+# 酒店 & 机票 未来服务权（FSR）—— 研究数据
 
-Source data for a research paper that applies the **Future Service Rights (FSR)**
-framework to **two markets at once**: hotel room-nights and airline seat-nights.
+本仓库是一篇论文的**数据包**：把 **未来服务权（Future Service Rights, FSR）**
+框架同时应用到**酒店客房夜**与**航空座位**两个市场。
 
-An FSR is a tokenized claim on one future unit of perishable service capacity.
-Hotel room-nights and flight seats are the two canonical instances, which is why
-they are studied together.
+FSR 是对**一份未来易逝服务产能**的凭证化索取权。酒店客房夜和航班座位是它最典型
+的两个实例，因此放在一起研究。
 
-The repository holds the **data package** (analysis-ready tables + the code
-needed to fetch the raw inputs) and a written record of the **paper methods**
-under `docs/`. The simulation engine and manuscript are built on top of this
-package.
+仓库包含两部分：**分析就绪的数据表**（以及获取原始数据所需的代码），
+和 `docs/` 下记录论文**所用方法**的文档。仿真引擎与论文正文在此数据包之上构建。
 
-## Repository layout
+## 仓库结构
 
 ```
-data/           analysis-ready datasets (see inventory below)
-scripts/        download_db1b.py - fetch + verify the raw DB1B quarters
-docs/           PAPER_METHODS.md + reference material for the paper
+data/           分析就绪的数据集（见下方清单）
+scripts/        download_db1b.py —— 下载并校验 DB1B 原始季度文件
+docs/           PAPER_METHODS.md + 论文参考文献材料
 ```
 
 ---
 
-## Data inventory
+## 数据清单
 
-| Path | Size | Rows | Content |
+| 路径 | 大小 | 行数 | 内容 |
 |---|---:|---:|---|
-| `data/hotel/cleaned_hotel_prices.csv` | 51.3 MB | 1,707,918 | Cleaned daily price panel: `date`, `hotelCode`, `price` (price in **fen**) |
-| `data/hotel/2024_3.csv` … `2024_6.csv` | ~13.8 MB each | ~0.43 M each | Raw daily prices, Mar–Jun 2024 (source for the cleaned panel) |
-| `data/hotel/hotel_info.csv` | 6.3 MB | 86,159 | Hotel metadata: `hotelName`, `hotelLevel`, `lon经度`, `lat纬度` |
-| `data/hotel/hotel_future_prices.csv` | 0.3 MB | 16,257 | Derived forward price per hotel: `hotelCode`, `futurePrice` |
-| `data/flight/flight_routes_real.csv` | 2.1 MB | 25,872 | Route-level stats from DB1B 2024Q2: `mean_fare`, `std_fare`, `fare_cv`, `n_carriers`, distance band, carrier list |
-| `data/flight/flight_eda_v4_summary.json` | 7 KB | — | Full DB1B EDA summary: 13 quarters (2022Q1–2025Q1), 97.3 M rows, 102,279 routes, 25 carriers |
-| `data/flight/empirical_carrier_correlations.json` | 2 KB | — | 9-carrier equity-return correlation matrix (5-yr daily, 2021–2025) |
-| `data/flight/flight_fsr_results_v1.json` | 55 KB | — | Flight FSR engine output (Monte Carlo / tranche results) |
-| `data/flight/db1b_manifest.json` | 2 KB | — | The 13 DB1B quarters: file names, URLs, byte sizes |
-| `data/provenance/*.py` | — | — | Scripts that produced the flight aggregates (kept for provenance) |
+| `data/hotel/cleaned_hotel_prices.csv` | 51.3 MB | 1,707,918 | 清洗后的日价格面板：`date`、`hotelCode`、`price`（价格单位为**分**） |
+| `data/hotel/2024_3.csv` … `2024_6.csv` | 每个约 13.8 MB | 每个约 43 万行 | 原始日价格，2024 年 3–6 月（清洗面板的来源） |
+| `data/hotel/hotel_info.csv` | 6.3 MB | 86,159 | 酒店元数据：`hotelName`、`hotelLevel`、`lon经度`、`lat纬度` |
+| `data/hotel/hotel_future_prices.csv` | 0.3 MB | 16,257 | 每家酒店的派生远期价：`hotelCode`、`futurePrice` |
+| `data/flight/flight_routes_real.csv` | 2.1 MB | 25,872 | 来自 DB1B 2024Q2 的航线级统计：`mean_fare`、`std_fare`、`fare_cv`、`n_carriers`、距离档、航司列表 |
+| `data/flight/flight_eda_v4_summary.json` | 7 KB | — | 全量 DB1B EDA 汇总：13 个季度（2022Q1–2025Q1）、9,734 万行、102,279 条航线、25 家航司 |
+| `data/flight/empirical_carrier_correlations.json` | 2 KB | — | 9 家航司权益收益相关阵（5 年日频，2021–2025） |
+| `data/flight/flight_fsr_results_v1.json` | 55 KB | — | 机票 FSR 引擎输出（蒙特卡洛 / 分层结果） |
+| `data/flight/db1b_manifest.json` | 2 KB | — | 13 个 DB1B 季度：文件名、URL、字节大小 |
+| `data/provenance/*.py` | — | — | 生成机票聚合数据的脚本（保留以溯源） |
 
-Column-by-column descriptions and SHA-256 checksums are in
-[`DATA_DICTIONARY.md`](DATA_DICTIONARY.md).
+逐字段说明与 SHA-256 校验和见 [`DATA_DICTIONARY.md`](DATA_DICTIONARY.md)。
 
 ---
 
-## Hotel data
+## 酒店数据
 
-- Coverage: **16,257 hotels**, daily prices **2024-03-01 … 2024-06-30** (Chengdu, China).
-- `2024-03` alone contains exactly **14,851** hotels — the cohort size used in the
-  survival / platform-exit analysis.
-- Price unit is **fen** (1/100 CNY); median 16,700 = ¥167 per night.
-- `hotelLevel` takes the four values `经济` / `舒适` / `高档` / `豪华`
-  (Economy / Comfort / Upscale / Luxury).
+- 覆盖范围：**16,257 家酒店**，日价格窗口 **2024-03-01 至 2024-06-30**（中国成都）。
+- 仅 2024-03 一个月就有 **14,851** 家酒店——即生存 / 平台退出分析所用的队列规模。
+- 价格单位为**分**（1 元 = 100 分）；中位数 16,700 = 每晚 167 元。
+- `hotelLevel` 取四个值：`经济` / `舒适` / `高档` / `豪华`。
 
-The panel supports: price-level, volatility, trend, and seasonality features;
-a platform-exit label (a hotel absent from a later month's panel); and local
-competition density (hotels per district and level, from the 86,159-row metadata).
+该面板可支撑：价格水平、波动率、趋势与季节性特征；平台退出标签（某酒店在后续月份的
+面板中消失）；以及本地竞争密度（按区县与档位统计酒店数，来自 86,159 行元数据）。
 
-## Flight data
+## 机票数据
 
-The raw source is the U.S. DOT **DB1B** Origin-and-Destination Survey (Market),
-a 10% quarterly sample of domestic U.S. tickets. It is public:
-<https://www.transtats.bts.gov/>
+原始来源是美国交通部（U.S. DOT）**DB1B** 起讫点调查（Market），为全美国内机票的
+10% 季度抽样。数据公开：<https://www.transtats.bts.gov/>
 
-> The **raw DB1B zips are not stored here.** They are 78–105 MB each (~1.27 GB
-> across 13 quarters) and three of them exceed GitHub's 100 MiB per-file limit.
-> Fetch and verify them with:
+> **DB1B 原始压缩包不存放在本仓库中。** 每个约 78–105 MB，13 个季度合计约 1.27 GB，
+> 其中三个超过 GitHub 单文件 100 MiB 的上限。请用以下命令下载并校验：
 >
 > ```bash
 > python scripts/download_db1b.py --unzip
 > ```
 >
-> The download is resumable and checks every file against the byte counts in
-> `data/flight/db1b_manifest.json`. To rebuild `flight_routes_real.csv` from the
-> raw zips, run `data/provenance/extract_real_routes.py`.
+> 下载支持断点续传，并按 `data/flight/db1b_manifest.json` 中的字节数逐个校验。
+> 若要从原始压缩包重建 `flight_routes_real.csv`，运行
+> `data/provenance/extract_real_routes.py`。
 
-Key facts from the flight EDA: 97.3 M fare observations, 102,279 OD routes,
-25 carriers, mean fare CV ≈ 0.56.
+机票 EDA 的关键事实：9,734 万条票价记录、102,279 条起讫点航线、25 家航司、
+平均票价变异系数（fare CV）约 0.56。
 
 ---
 
-## Provenance
+## 数据来源
 
-Extracted from the local working tree of `hotel-order-financialization`
-(`https://github.com/David-coder-hnu/hotel-order-financialization`), commit
-`4be93ae`. The hotel CSVs were copied byte-for-byte; every SHA-256 checksum is
-recorded in `DATA_DICTIONARY.md`.
+取自 `hotel-order-financialization`
+（`https://github.com/David-coder-hnu/hotel-order-financialization`）本地工作树，
+提交 `4be93ae`。酒店 CSV 为逐字节复制，所有 SHA-256 校验和记录在
+`DATA_DICTIONARY.md` 中。
 
-## License
+## 许可
 
-MIT — see [`LICENSE`](LICENSE).
+MIT —— 见 [`LICENSE`](LICENSE)。

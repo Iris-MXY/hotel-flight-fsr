@@ -1,229 +1,209 @@
-# Paper Methods — FSR Securitization for Hotels and Flights
+# 论文方法记录 —— 酒店与机票的未来服务权证券化
 
-Consolidated record of the methods used across this research programme, so the
-approach survives any cleanup of the original working tree. Companion material:
-`docs/reference/` holds the P0 experiment scripts and the revision plan.
+本文汇总整个研究计划所使用的方法，确保即使原始工作目录被清理，方法也不会丢失。
+配套材料：`docs/reference/` 存放 P0 阶段实验脚本与改稿方案。
 
 ---
 
-## 0. Research framing
+## 0. 研究定位
 
-**Future Service Rights (FSR)** — a tokenized claim on one future unit of
-perishable service capacity. Two instances are studied together:
+**未来服务权（Future Service Rights, FSR）**——对**一份未来易逝服务产能**的凭证化
+索取权。本文同时研究它的两个实例：
 
-| | Hotel | Flight |
+| | 酒店 | 机票 |
 |---|---|---|
-| Capacity unit | room-night | seat |
-| Issuer | individual hotel | carrier |
-| Data source | Chengdu OTA price panel | U.S. DOT DB1B survey |
-| Dependence | Gaussian copula | multivariate t-copula (ν = 4) |
-| Maturity | 36 months | 12 months |
+| 产能单位 | 客房夜 | 座位 |
+| 发行主体 | 单体酒店 | 航空公司 |
+| 数据来源 | 成都 OTA 价格面板 | 美国交通部 DB1B 调查 |
+| 相依结构 | 高斯 copula | 多元 t-copula（ν = 4） |
+| 期限 | 36 个月 | 12 个月 |
 
-The unit of the framework is a **Time-Right (TR)**: it trades on a secondary
-market and settles by cash, discounted physical stay/travel, or transfer.
-
----
-
-## 1. Economic mechanism (both markets)
-
-- Platform acts as market maker: buys wholesale at `P_issue`, sells retail at
-  `P_retail`; discount is market-driven, the supplier pays zero commission.
-- Issuance value = room count (or seats) × days × over-issuance multiple.
-- Settlement mechanisms:
-  - **Continuous offset** (primary) — sell anytime; proceeds apply as booking
-    credit. User share 45%.
-  - **Ternary physical** (floor) — at maturity, fixed α = 0.70. User share 30%.
-  - **Cash / transfer** — contractual or market. User share 25%.
-- Flight variant simplifies redemption to cash 70% / voucher 25% / transfer 5%
-  and adds a **carrier buyback** below 82% of issue price (implicit price floor).
-
-Stakeholder split is reported per Time-Right (hotel baseline: system
-+¥1,227/TR; hotels +¥817, users +¥221, platform +¥98, investors +¥91).
+框架的基本单位是**时权（Time-Right, TR）**：在二级市场交易，并通过现金、
+折扣实物入住/出行、或转让三种方式兑付。
 
 ---
 
-## 2. Structured-finance engine (the system contribution)
+## 1. 经济机制（两个市场通用）
 
-Shared pipeline: **asset pool → stratification → credit model → dependence
-sampling → cash-flow waterfall → tranche loss → rating**.
+- 平台作为做市商：以 `P_issue` 批发买入、以 `P_retail` 零售卖出；折扣由市场驱动，
+  供给方零佣金。
+- 发行价值 = 房间数（或座位数）× 天数 × 超发倍数。
+- 兑付机制：
+  - **连续冲抵（主渠道）**——随时可卖，所得直接抵作订房/订票款。用户份额 45%。
+  - **三元实物（下限）**——到期时固定 α = 0.70。用户份额 30%。
+  - **现金 / 转让**——按合约或市场价。用户份额 25%。
+- 机票版本把兑付简化为 现金 70% / 代金券 25% / 转让 5%，并加入
+  **航司回购**：低于发行价 82% 时回购，形成隐性价格下限。
 
-**Tranches.** Hotel: senior/mezzanine/junior/equity with reserve and
-overcollateralization. Flight: 65% / 20% / 10% / 5%, coupons 5.5% / 8.0% / 12.0%,
-reserve 5%, OC 3%.
+按每个时权报告利益相关方分配（酒店基准：系统 +¥1,227/TR；酒店 +¥817、
+用户 +¥221、平台 +¥98、投资者 +¥91）。
 
-**Waterfall.** Sequential-pay with OC/IC triggers and acceleration; losses
-propagate bottom-up (junior absorbs first, senior last), with LGD recovery.
+---
 
-**Dependence.** Defaults sampled via copula of default times.
-- Hotel: Gaussian copula.
-- Flight: t-copula ν = 4 with a correlation matrix estimated from 5-year daily
-  airline equity log-returns (2021–2025, 1,192 days).
+## 2. 结构化金融引擎（系统贡献）
 
-**Monte Carlo.** 2,000–5,000 paths; joblib-parallel; VaR 95/99; stress
-multipliers (Baseline → Extreme).
+共用流水线：**资产池 → 分层抽样 → 信用模型 → 相依抽样 → 现金流瀑布 → 分层损失 → 评级**。
 
-### 2.1 Algorithm A1 — copula normalisation (critical fix)
+**分层。** 酒店：优先级/夹层/劣后/权益，含准备金与超额抵押。机票：65% / 20% / 10% / 5%，
+票息 5.5% / 8.0% / 12.0%，准备金 5%，超额抵押 3%。
 
-Correlated latent draws must satisfy
+**瀑布。** 顺序支付，含 OC/IC 触发与加速清偿；损失自下而上传导
+（劣后先吸收、优先级最后），并计入 LGD 回收。
+
+**相依结构。** 通过违约时间 copula 采样违约。
+- 酒店：高斯 copula。
+- 机票：t-copula ν = 4，相关阵由 5 年日频航司权益对数收益估计（2021–2025，1,192 天）。
+
+**蒙特卡洛。** 2,000–5,000 条路径；joblib 并行；VaR 95/99；
+压力倍数（Baseline → Extreme）。
+
+### 2.1 算法 A1 —— copula 归一化（关键修正）
+
+相关潜变量抽样必须满足
 
 ```
-u = c · Z · w + ε · (1 − w),      require  var(u) = 1
+u = c · Z · w + ε · (1 − w),      要求  var(u) = 1
 ```
 
-If `var(u) ≠ 1`, then `Φ(u)` is **not** uniform, and the realized default rate is
-systematically biased. Measured bias in the original build: ~3× at true
-`p = 0.056` and ~42× at `p = 0.001`. This is a first-class algorithmic detail of
-the paper, not an implementation footnote.
+若 `var(u) ≠ 1`，则 `Φ(u)` **不再服从均匀分布**，实际违约率被系统性偏移。
+原始实现中的实测偏差：真实 `p = 0.056` 时约 3 倍，`p = 0.001` 时约 42 倍。
+这是论文的一等算法细节，不是实现脚注。
 
-### 2.2 Algorithm A2 — waterfall
+### 2.2 算法 A2 —— 现金流瀑布
 
-Per period: collect → pay senior coupon/principal → mezzanine → junior → equity,
-with OC/IC breach tests switching to accelerated amortisation. Write the state
-transition explicitly in pseudo-code for the paper.
+每期：收款 → 付优先级票息/本金 → 夹层 → 劣后 → 权益，并按 OC/IC 违约测试
+切换为加速摊还。论文中需明确写出状态转移的伪代码。
 
-### 2.3 Algorithm A3 — stratified asset-pool sampling
+### 2.3 算法 A3 —— 资产池分层抽样
 
-Stratify by level (hotel) / distance band (flight) with concentration caps.
-Note `max(int(target × weight), 5)` makes the realized pool size differ from the
-target (e.g. 66 → 64); state this in the paper.
+按档位（酒店）/ 距离档（机票）分层，并设集中度上限。
+注意 `max(int(target × weight), 5)` 会使实际池规模偏离目标（例如 66 → 64），
+需在论文中说明。
 
-### 2.4 Algorithm A4 — period-differentiated pricing
+### 2.4 算法 A4 —— 时段差异化定价
 
-Three price tiers (holiday / weekend / weekday); issuance volume = rooms × days ×
-over-issuance multiple.
+三档价格（节假日 / 周末 / 平日）；发行量 = 房间数 × 天数 × 超发倍数。
 
 ---
 
-## 3. Credit modelling
+## 3. 信用建模
 
-### 3.1 Structural baseline (and its failure)
+### 3.1 结构式基线（及其失效）
 
-Merton DD + GARCH with a PD cap (0.50). KMV variant. On this borrower set the
-structural models **fail**: 65/66 pooled names hit the 50% cap, and three
-specifications span 9.8% → 49.4% → 98.2% (10× spread). The root cause is
-**uninformative inputs** — volatility-based DD has near-zero signal on this panel
-(AUC ≈ 0.51).
+Merton DD + GARCH，设 PD 上限 0.50；另有 KMV 变体。在这类借款人上，结构式模型
+**系统性失效**：池内 65/66 家撞上 50% 上限，三种设定给出 9.8% → 49.4% → 98.2%
+（10 倍跨度）。根因是**输入无信息**——基于波动率的 DD 在该面板上近乎无信号
+（AUC ≈ 0.51）。
 
-### 3.2 Data-calibrated PD (hotel)
+### 3.2 数据校准 PD（酒店）
 
-Survival / platform-exit analysis over 14,851 hotels observed Mar–Jun 2024:
+对 2024 年 3–6 月观测的 14,851 家酒店做生存 / 平台退出分析：
 
-| Tier | 3-month exit rate | Calibrated PD |
+| 档位 | 3 个月退出率 | 校准 PD |
 |---|---|---|
-| Economy | 9.00% | 15.7% |
-| Comfort | 3.62% | 6.8% |
-| Upscale | 1.30% | 2.5% |
-| Luxury | 0.00% | 0.5% |
+| 经济 | 9.00% | 15.7% |
+| 舒适 | 3.62% | 6.8% |
+| 高档 | 1.30% | 2.5% |
+| 豪华 | 0.00% | 0.5% |
 
-Under calibrated PDs, MC yields Senior EL 0.16%, VaR99 3.98% → Aa–A.
+在校准 PD 下，蒙特卡洛给出 优先级 EL 0.16%、VaR99 3.98% → Aa–A。
 
-### 3.3 Machine-learning PD (the new core contribution)
+### 3.3 机器学习 PD（新的核心贡献）
 
-**Task.** Binary: from a hotel's month-*t* price-panel features, predict whether
-it has **exited the platform** by *t+3* months.
+**任务。** 二分类：给定酒店在第 *t* 月的价格面板特征，预测其在 *t+3* 月是否
+**退出平台**。
 
-**Data.** Panel of 16,257 hotels × 4 months. Rolling cohorts t ∈ {Mar, Apr, May}.
-Label = absent from the t+3 panel.
+**数据。** 16,257 家酒店 × 4 个月的面板。滚动队列 t ∈ {3 月, 4 月, 5 月}。
+标签 = 在 t+3 月面板中消失。
 
-**Labelling caveat (state explicitly).** Exit ≠ default; it is a measurable,
-assumption-light *proxy*. The 4-month window cannot support true out-of-time
-validation. Main task predicts exit; the exit→default mapping is handled as a
-sensitivity, not baked in.
+**标签说明（必须写明）。** 退出 ≠ 违约；它是一个可测量、少假设的**代理**标签。
+4 个月窗口无法支撑真正的时间外验证。主任务预测退出；退出→违约 的映射作为
+敏感性处理，不写死。
 
-**Features.** price level (mean/median/min/max); volatility (log-return sd,
-annualised vol, range ratio); trend (monthly change, slope, momentum); shape
-(weekly cycle, intra-month variation, seasonal residual); completeness
-(n_records, days present, span); structure (price band, district, lat/lon);
-competition (same-district same-tier hotel count from the 86,159-row directory).
+**特征。** 价格水平（均值/中位数/最小/最大）；波动（对数收益标准差、年化波动率、
+极差比）；趋势（月度变化、斜率、动量）；形态（周内周期、月内波动、季节残差）；
+完整度（记录数、在场天数、跨度）；结构（价位档、区县、经纬度）；
+竞争（同区县同档位酒店数，来自 86,159 行名录）。
 
-**Models.** Logistic regression baseline; Random Forest / LightGBM / XGBoost;
-GRU on price sequences. Structural baselines: Merton DD, KMV.
+**模型。** 逻辑回归基线；随机森林 / LightGBM / XGBoost；价格序列上的 GRU。
+结构式基线：Merton DD、KMV。
 
-**Evaluation (deliberately not AUC-only).** Discrimination: AUC, PR-AUC.
-Calibration: Brier score, ECE, reliability diagram. Threshold behaviour.
+**评估（刻意不只报 AUC）。** 判别力：AUC、PR-AUC。校准：Brier、ECE、
+可靠性图。阈值行为。
 
-**P0 empirical results** (Chengdu, Mar→Jun cohort, N = 14,851, positive 7.84%):
+**P0 实测结果**（成都，3 月→6 月队列，N = 14,851，正例 7.84%）：
 
-| Configuration | AUC | PR-AUC |
+| 配置 | AUC | PR-AUC |
 |---|---|---|
-| All features | 0.8290 | 0.3843 |
-| Drop completeness | 0.7930 | 0.3071 |
-| Drop completeness + geography | 0.7808 | 0.2776 |
-| Price features only | 0.7474 | 0.2485 |
-| Completeness only (control) | 0.7401 | 0.2648 |
-| Geography only (control) | 0.5813 | 0.1034 |
-| Best single economic feature (price_mean) | 0.6522 | — |
-| Merton DD (structural) | 0.5644 | — |
+| 全部特征 | 0.8290 | 0.3843 |
+| 去完整度 | 0.7930 | 0.3071 |
+| 去完整度+地理 | 0.7808 | 0.2776 |
+| 纯价格特征 | 0.7474 | 0.2485 |
+| 只用完整度（对照） | 0.7401 | 0.2648 |
+| 只用地理（对照） | 0.5813 | 0.1034 |
+| 最佳经济单特征（price_mean） | 0.6522 | — |
+| Merton DD（结构式） | 0.5644 | — |
 
-Signal exists (AUC ≫ 0.5). Completeness is the strongest single group and is a
-known confound, **but price-only features still reach 0.747**, so the model does
-not depend on it.
+信号确实存在（AUC 远高于 0.5）。完整度是最强的单组，且是已知混淆项，
+**但纯价格特征仍有 0.747**，说明模型并不依赖它。
 
-**Calibration finding (contribution #3).** With all features, AUC spread across
-seven configurations is only **0.0355**, while ECE spread is **0.3050 (≈50×)**.
-`class_weight='balanced'` barely changes discrimination but breaks calibration
-(logistic-regression mean predicted PD inflated **5.0×**); isotonic calibration
-repairs it (ECE 0.0943 → 0.0100) without hurting AUC. Downstream, a 5× PD bias
-propagates to a ~5× bias in tranche expected loss — this is the bridge from ML to
-the financial application.
+**校准发现（贡献 #3）。** 使用全部特征时，7 种配置的 AUC 极差仅 **0.0355**，
+而 ECE 极差达 **0.3050（约 50 倍）**。`class_weight='balanced'` 几乎不改变判别力，
+却破坏概率校准（逻辑回归平均预测 PD 被放大 **5.0 倍**）；isotonic 校准可修复
+（ECE 0.0943 → 0.0100），且不伤 AUC。下游看，5 倍 PD 偏差会把分层预期损失
+一起带偏约 5 倍——这正是把机器学习与金融应用连起来的那一环。
 
 ---
 
-## 4. Flight extension
+## 4. 机票扩展
 
-**Data.** U.S. DOT DB1B Origin-and-Destination (Market) survey, 13 quarters
-2022Q1–2025Q1: 97.3M records, 102,279 OD routes, 25 carriers. Route pool built by
-stratified sampling over distance bands (short/medium/long), capped per carrier.
+**数据。** 美国交通部 DB1B 起讫点（Market）调查，13 个季度 2022Q1–2025Q1：
+9,734 万条记录、102,279 条起讫点航线、25 家航司。航线池按距离档
+（短/中/长）分层抽样，并按航司设上限。
 
-**Pricing.** Booking curve replaces spot convergence:
-`P(t) = P₀ · exp(β · t / T)`, β = 0.22. Discount rate `r₀ = 8%` (airline WACC);
-issue discount 8%; safety factor 0.82.
+**定价。** 用订座曲线替代即期收敛：
+`P(t) = P₀ · exp(β · t / T)`，β = 0.22。贴现率 `r₀ = 8%`（航空业 WACC）；
+发行折扣 8%；安全系数 0.82。
 
-**Result.** 69-route pool across 11 carriers; Senior tranche EL 0 bps, rating
-Aaa–Aa; maximum pool loss 15.6% never breaches the 35% subordination.
-Robust across Gaussian, t(6) and t(4) copulas and `r₀ ∈ [4%, 12%]`.
+**结果。** 69 条航线、11 家航司的资产池；优先级 EL 0 bps，评级 Aaa–Aa；
+最大池损失 15.6%，从未击穿 35% 的次级保护。对高斯、t(6)、t(4) copula
+以及 `r₀ ∈ [4%, 12%]` 均稳健。
 
-**Known limitation.** DB1B records tickets by travel quarter, not purchase date,
-so β cannot be calibrated from the data; user savings are shown to be
-independent of β by algebraic construction.
-
----
-
-## 5. Competition paradox (cross-market hypothesis)
-
-In DB1B, route fare dispersion (`fare_cv`) *rises* with the number of carriers
-`n_carriers` — a paradox versus standard competition intuition. The same test is
-runnable on the hotel panel: price dispersion within a district × tier cell
-versus hotel density. Testing one hypothesis on both markets is the natural
-basis for a combined hotel + flight paper.
+**已知局限。** DB1B 按出行季度记录机票，而非购买日期，因此 β 无法从数据校准；
+论文以代数构造证明用户节省与 β 无关。
 
 ---
 
-## 6. Positioning of the new paper
+## 5. 竞争悖论（跨市场假设）
 
-Shift from "a new asset class" (mechanism design) to a **simulation-system**
-paper for a CS/EI venue: architecture + algorithms (copula sampling, waterfall,
-stratified sampling, parallel Monte Carlo) + a machine-learning PD component
-validated on 1.7M real price records. Three contributions:
-
-1. **System / algorithms** — FSR securitization simulator with copula-dependent
-   default sampling, OC/IC waterfall, parallel MC; pseudo-code + complexity +
-   speed-up.
-2. **ML PD** — replaces structural models that fail on sparse borrowers.
-3. **Calibration over discrimination** — probability-calibration quality, not
-   ranking, determines tranche ratings.
-
-**Reported limitations.** (i) 4-month window, no out-of-time validation;
-(ii) exit ≠ default, proxy label is noisy; (iii) prototype is an offline
-simulation, not a chain deployment.
+在 DB1B 中，航线票价离散度（`fare_cv`）随航司数 `n_carriers` **上升**——
+与标准竞争直觉相反的悖论。同一检验可在酒店面板上复现：同一"区县 × 档位"单元内的
+价格离散度 vs 酒店密度。用一份数据在两个市场检验同一条假设，正是酒店+机票合一篇
+论文的自然基础。
 
 ---
 
-## 7. Reference assets in this repository
+## 6. 新论文定位
 
-| File | What it is |
+从"提出新资产类别"（机制设计）转向面向 CS/EI 会场的**仿真系统**论文：
+系统架构 + 算法（copula 抽样、现金流瀑布、分层抽样、并行蒙特卡洛）+
+在 170 万条真实价格记录上验证的机器学习 PD 组件。三条贡献：
+
+1. **系统 / 算法**——FSR 证券化仿真器，含 copula 相依违约抽样、
+   OC/IC 瀑布、并行蒙特卡洛；给出伪代码 + 复杂度 + 加速比。
+2. **机器学习 PD**——替代在稀疏借款人上失效的结构式模型。
+3. **校准重于判别**——决定分层评级的，是概率校准质量，而非排序能力。
+
+**需如实报告的限制。**（i）4 个月窗口，无时间外验证；（ii）退出 ≠ 违约，
+代理标签有噪声；（iii）原型是离线仿真，而非链上部署。
+
+---
+
+## 7. 本仓库中的参考文献
+
+| 文件 | 说明 |
 |---|---|
-| `docs/reference/REVISION_PLAN.md` | Section-by-section rewrite plan with all P0 results |
-| `docs/reference/p0_feasibility.py` | Feasibility experiment: can exit be predicted? |
-| `docs/reference/p0_baselines.py` | Feature ablation, single-feature and structural baselines |
-| `docs/reference/p05_calibration.py` | Discrimination-vs-calibration experiment (contribution #3) |
+| `docs/reference/REVISION_PLAN.md` | 逐节改稿方案，含全部 P0 结果 |
+| `docs/reference/p0_feasibility.py` | 可行性实验：退出是否可预测？ |
+| `docs/reference/p0_baselines.py` | 特征消融、单特征与结构式基线 |
+| `docs/reference/p05_calibration.py` | 判别力 vs 校准实验（贡献 #3） |
