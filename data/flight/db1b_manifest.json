@@ -1,0 +1,23 @@
+{
+  "source": "U.S. DOT Bureau of Transportation Statistics - Origin and Destination Survey (DB1B), Market table",
+  "landing_page": "https://www.transtats.bts.gov/",
+  "bulk_url_template": "https://transtats.bts.gov/PREZIP/Origin_and_Destination_Survey_DB1BMarket_{quarter}.zip",
+  "quarter_count": 13,
+  "total_bytes": 1273534805,
+  "note": "Raw quarterly zips are 78-105 MB each; three exceed GitHub's 100 MiB per-file limit and none are stored in this repository. Run scripts/download_db1b.py to fetch, size-verify and unpack them into data/raw/db1b/ (gitignored).",
+  "quarters": [
+    { "quarter": "2022_1", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_1.zip", "bytes": 81864513 },
+    { "quarter": "2022_2", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_2.zip", "bytes": 99061514 },
+    { "quarter": "2022_3", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_3.zip", "bytes": 94164196 },
+    { "quarter": "2022_4", "file": "Origin_and_Destination_Survey_DB1BMarket_2022_4.zip", "bytes": 95212749 },
+    { "quarter": "2023_1", "file": "Origin_and_Destination_Survey_DB1BMarket_2023_1.zip", "bytes": 88530421 },
+    { "quarter": "2023_2", "file": "Origin_and_Destination_Survey_DB1BMarket_2023_2.zip", "bytes": 100171765 },
+    { "quarter": "2023_3", "file": "Origin_and_Destination_Survey_DB1BMarket_2023_3.zip", "bytes": 97972037 },
+    { "quarter": "2023_4", "file": "Origin_and_Destination_Survey_DB1BMarket_2023_4.zip", "bytes": 99892180 },
+    { "quarter": "2024_1", "file": "Origin_and_Destination_Survey_DB1BMarket_2024_1.zip", "bytes": 95062966 },
+    { "quarter": "2024_2", "file": "Origin_and_Destination_Survey_DB1BMarket_2024_2.zip", "bytes": 109963653 },
+    { "quarter": "2024_3", "file": "Origin_and_Destination_Survey_DB1BMarket_2024_3.zip", "bytes": 107964122 },
+    { "quarter": "2024_4", "file": "Origin_and_Destination_Survey_DB1BMarket_2024_4.zip", "bytes": 109087449 },
+    { "quarter": "2025_1", "file": "Origin_and_Destination_Survey_DB1BMarket_2025_1.zip", "bytes": 94587240 }
+  ]
+}

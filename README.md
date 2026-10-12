@@ -7,8 +7,18 @@ An FSR is a tokenized claim on one future unit of perishable service capacity.
 Hotel room-nights and flight seats are the two canonical instances, which is why
 they are studied together.
 
-This repository holds **data only**. Code, models and the manuscript live
-elsewhere; the goal here is a small, clean, reproducible data package.
+The repository holds the **data package** (analysis-ready tables + the code
+needed to fetch the raw inputs) and a written record of the **paper methods**
+under `docs/`. The simulation engine and manuscript are built on top of this
+package.
+
+## Repository layout
+
+```
+data/           analysis-ready datasets (see inventory below)
+scripts/        download_db1b.py - fetch + verify the raw DB1B quarters
+docs/           PAPER_METHODS.md + reference material for the paper
+```
 
 ---
 
@@ -24,6 +34,7 @@ elsewhere; the goal here is a small, clean, reproducible data package.
 | `data/flight/flight_eda_v4_summary.json` | 7 KB | — | Full DB1B EDA summary: 13 quarters (2022Q1–2025Q1), 97.3 M rows, 102,279 routes, 25 carriers |
 | `data/flight/empirical_carrier_correlations.json` | 2 KB | — | 9-carrier equity-return correlation matrix (5-yr daily, 2021–2025) |
 | `data/flight/flight_fsr_results_v1.json` | 55 KB | — | Flight FSR engine output (Monte Carlo / tranche results) |
+| `data/flight/db1b_manifest.json` | 2 KB | — | The 13 DB1B quarters: file names, URLs, byte sizes |
 | `data/provenance/*.py` | — | — | Scripts that produced the flight aggregates (kept for provenance) |
 
 Column-by-column descriptions and SHA-256 checksums are in
@@ -50,11 +61,17 @@ The raw source is the U.S. DOT **DB1B** Origin-and-Destination Survey (Market),
 a 10% quarterly sample of domestic U.S. tickets. It is public:
 <https://www.transtats.bts.gov/>
 
-> The **raw DB1B files are not included here** — they span 13 quarters and several
-> gigabytes. What is included is the derived route-level and carrier-level
-> aggregate needed to reproduce the flight side of the study. To rebuild
-> `flight_routes_real.csv` from scratch, download the DB1B quarters and run
-> `data/provenance/extract_real_routes.py`.
+> The **raw DB1B zips are not stored here.** They are 78–105 MB each (~1.27 GB
+> across 13 quarters) and three of them exceed GitHub's 100 MiB per-file limit.
+> Fetch and verify them with:
+>
+> ```bash
+> python scripts/download_db1b.py --unzip
+> ```
+>
+> The download is resumable and checks every file against the byte counts in
+> `data/flight/db1b_manifest.json`. To rebuild `flight_routes_real.csv` from the
+> raw zips, run `data/provenance/extract_real_routes.py`.
 
 Key facts from the flight EDA: 97.3 M fare observations, 102,279 OD routes,
 25 carriers, mean fare CV ≈ 0.56.

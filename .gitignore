@@ -15,3 +15,9 @@ Thumbs.db
 *.xlsx
 *.zip
 *.log
+
+# Raw datasets fetched on demand (scripts/download_db1b.py)
+data/raw/
+
+# Local tooling
+.tools/
