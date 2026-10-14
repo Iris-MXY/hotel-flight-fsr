@@ -15,6 +15,7 @@ FSR 是对**一份未来易逝服务产能**的凭证化索取权。酒店客房
 data/           分析就绪的数据集（见下方清单）
 scripts/        download_db1b.py —— 下载并校验 DB1B 原始季度文件
 docs/           PAPER_METHODS.md + 论文参考文献材料
+papers/         相关文献（开放获取 PDF + 待获取清单）
 ```
 
 ---
