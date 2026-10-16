@@ -1,61 +1,47 @@
-# 待下载文献清单（19 篇）
+# 待获取文献清单
 
-用法：点 **DOI** 打开正式页面（你已登录、有订阅时可直接下 PDF），
-或点 **Scholar** 在谷歌学术里找可下载版本。
-下好后请按「建议文件名」命名并存进本目录（`papers/`），我再来统一校验和补索引。
+用法：点 **DOI** 打开正式页面（登录且有订阅时可直接下 PDF），或点 **Scholar**
+在谷歌学术里找可下载版本。下好后按「建议文件名」命名并存进 `papers/` 即可。
+
+> 已完成：`2021_credit_scoring_logistic_tree`、`2023_interpretable_ml_credit_scoring`
 
 ---
 
-## 信用风险与机器学习 PD
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 1 | `2021_credit_scoring_logistic_tree.pdf` | Machine learning for credit scoring: Improving logistic regression with non-linear decision-tree effects | EJOR 2021 | [DOI](https://doi.org/10.1016/j.ejor.2021.06.053) · [Scholar](https://scholar.google.com/scholar?q=Machine+learning+for+credit+scoring+Improving+logistic+regression+with+non-linear+decision-tree+effects) |
-| 2 | `2023_interpretable_ml_credit_scoring.pdf` | Interpretable machine learning for imbalanced credit scoring datasets | EJOR 2023 | [DOI](https://doi.org/10.1016/j.ejor.2023.06.036) · [Scholar](https://scholar.google.com/scholar?q=Interpretable+machine+learning+for+imbalanced+credit+scoring+datasets) |
-| 3 | `2022_bankruptcy_xgboost.pdf` | Bankruptcy Prediction using the XGBoost Algorithm and Variable Importance Feature Engineering | Computational Economics 2022 | [DOI](https://doi.org/10.1007/s10614-021-10227-1) · [Scholar](https://scholar.google.com/scholar?q=Bankruptcy+Prediction+using+the+XGBoost+Algorithm+and+Variable+Importance+Feature+Engineering) |
-| 4 | `2022_financial_distress_deep_learning.pdf` | Deep Learning-Based Model for Financial Distress Prediction | Annals of Operations Research 2022 | [DOI](https://doi.org/10.1007/s10479-022-04766-5) · [Scholar](https://scholar.google.com/scholar?q=Deep+Learning-Based+Model+for+Financial+Distress+Prediction) |
-
-## 概率校准与类别不平衡
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 5 | `2022_class_imbalance_harm.pdf` | The harm of class imbalance corrections for risk prediction models: illustration and simulation using logistic regression | JAMIA 2022 | [DOI](https://doi.org/10.1093/jamia/ocac093) · [Scholar](https://scholar.google.com/scholar?q=The+harm+of+class+imbalance+corrections+for+risk+prediction+models) |
-| 6 | `2021_balanced_loss_calibration.pdf` | Dynamically Weighted Balanced Loss: Class Imbalanced Learning and Confidence Calibration of Deep Neural Networks | IEEE TNNLS 2021 | [DOI](https://doi.org/10.1109/tnnls.2020.3047335) · [Scholar](https://scholar.google.com/scholar?q=Dynamically+Weighted+Balanced+Loss+Class+Imbalanced+Learning+and+Confidence+Calibration) |
-
-## 证券化与代币化
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 7 | `2023_real_estate_security_token.pdf` | Real estate security token offerings and the secondary market: Driven by crypto hype or fundamentals? | Journal of Banking & Finance 2023 | [DOI](https://doi.org/10.1016/j.jbankfin.2023.106940) · [Scholar](https://scholar.google.com/scholar?q=Real+estate+security+token+offerings+and+the+secondary+market) |
-| 8 | `2021_abs_expressway_usufruct.pdf` | Sustainable Construction and Financing—Asset-Backed Securitization of Expressway's Usufruct with Redeemable Rights | Sustainability 2021 | [DOI](https://doi.org/10.3390/su13169113) · [Scholar](https://scholar.google.com/scholar?q=Asset-Backed+Securitization+of+Expressway+Usufruct+with+Redeemable+Rights) |
-| 9 | `2021_defi_smart_contract_markets.pdf` | Decentralized Finance: On Blockchain- and Smart Contract-Based Financial Markets | St. Louis Fed Review 2021 | [DOI](https://doi.org/10.20955/r.103.153-74) · [Scholar](https://scholar.google.com/scholar?q=Decentralized+Finance+On+Blockchain-+and+Smart+Contract-Based+Financial+Markets) |
-
-## 酒店与旅游运营
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 10 | `2023_hotel_booking_curve_ml.pdf` | Application of machine learning to cluster hotel booking curves for hotel demand forecasting | IJHM 2023 | [DOI](https://doi.org/10.1016/j.ijhm.2023.103455) · [Scholar](https://scholar.google.com/scholar?q=Application+of+machine+learning+to+cluster+hotel+booking+curves+for+hotel+demand+forecasting) |
-| 11 | `2021_hospitality_financial_distress.pdf` | Financial distress in the hospitality industry during the Covid-19 disaster | Tourism Management 2021 | [DOI](https://doi.org/10.1016/j.tourman.2021.104301) · [Scholar](https://scholar.google.com/scholar?q=Financial+distress+in+the+hospitality+industry+during+the+Covid-19+disaster) |
-| 12 | `2021_managing_hotel_revenue_covid.pdf` | Managing hotel revenue amid the COVID-19 crisis | IJCHM 2021 | [DOI](https://doi.org/10.1108/ijchm-06-2020-0623) · [Scholar](https://scholar.google.com/scholar?q=Managing+hotel+revenue+amid+the+COVID-19+crisis) |
-| 13 | `2022_domestic_tourism_hotel_demand.pdf` | Domestic tourism and the resilience of hotel demand | Annals of Tourism Research 2022 | [DOI](https://doi.org/10.1016/j.annals.2022.103352) · [Scholar](https://scholar.google.com/scholar?q=Domestic+tourism+and+the+resilience+of+hotel+demand) |
-
-## 航空运营与竞争
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 14 | `2021_chairs_air_transport_simulator.pdf` | CHAIRS: A choice-based air transport simulator applied to airline competition and revenue management | TR Part A 2021 | [DOI](https://doi.org/10.1016/j.tra.2021.11.010) · [Scholar](https://scholar.google.com/scholar?q=CHAIRS+A+choice-based+air+transport+simulator+applied+to+airline+competition+and+revenue+management) |
-| 15 | `2024_airline_competition_review.pdf` | Airline competition: A comprehensive review of recent research | J. Air Transport Research Society 2024 | [DOI](https://doi.org/10.1016/j.jatrs.2024.100013) · [Scholar](https://scholar.google.com/scholar?q=Airline+competition+A+comprehensive+review+of+recent+research) |
-| 16 | `2023_hidden_city_ticketing.pdf` | The determinants of hidden-city ticketing: Competition, hub-and-spoke networks, and advance-purchase requirements | TR Part E 2023 | [DOI](https://doi.org/10.1016/j.tre.2023.103086) · [Scholar](https://scholar.google.com/scholar?q=The+determinants+of+hidden-city+ticketing+Competition+hub-and-spoke+networks) |
-
-## copula 依赖结构
-
-| # | 建议文件名 | 标题 | 期刊 / 年份 | 链接 |
-|---|---|---|---|---|
-| 17 | `2024_clean_energy_systemic_copula.pdf` | Measuring the Systemic Risk of Clean Energy Markets Based on the Dynamic Factor Copula Model | Systems 2024 | [DOI](https://doi.org/10.3390/systems12120584) · [Scholar](https://scholar.google.com/scholar?q=Measuring+the+Systemic+Risk+of+Clean+Energy+Markets+Dynamic+Factor+Copula) |
-| 18 | `2023_copula_default_dependence.pdf` | Default dependence in the insurance and banking sectors: A copula approach | JIFMIM 2023 | [DOI](https://doi.org/10.1016/j.intfin.2023.101911) · [Scholar](https://scholar.google.com/scholar?q=Default+dependence+in+the+insurance+and+banking+sectors+A+copula+approach) |
-
-## 常旅客计划（FSR 产业先例）
+## A. 近期优先（2024–2026）
 
 | # | 建议文件名 | 标题 | 来源 / 年份 | 链接 |
 |---|---|---|---|---|
-| 19 | `2025_miles_as_capital.pdf` | Miles as Capital: How Frequent Flyer Programs sustained North American Airlines During COVID-19 | Preprint 2025 | [DOI](https://doi.org/10.13140/rg.2.2.32889.43360) · [Scholar](https://scholar.google.com/scholar?q=Miles+as+Capital+How+Frequent+Flyer+Programs+sustained+North+American+Airlines) |
+| A1 | `2025_hotel_booking_cancellation_ml.pdf` | Machine Learning in Hospitality: Interpretable Forecasting of Booking Cancellations | IEEE Access 2025 | [DOI](https://doi.org/10.1109/access.2025.3536094) · [Scholar](https://scholar.google.com/scholar?q=Machine+Learning+in+Hospitality+Interpretable+Forecasting+of+Booking+Cancellations) |
+| A2 | `2024_hotel_occupancy_interpretable_ml.pdf` | Decoding the future: Proposing an interpretable machine learning model for hotel occupancy forecasting using principal component analysis | IJHM 2024 | [DOI](https://doi.org/10.1016/j.ijhm.2024.103802) · [Scholar](https://scholar.google.com/scholar?q=interpretable+machine+learning+model+for+hotel+occupancy+forecasting+principal+component+analysis) |
+| A3 | `2024_hotel_demand_forecasting_review.pdf` | Hotel demand forecasting models and methods using artificial intelligence: A systematic literature review | Tourism & Management Studies 2024 | [DOI](https://doi.org/10.18089/tms.20240304) · [Scholar](https://scholar.google.com/scholar?q=Hotel+demand+forecasting+models+and+methods+using+artificial+intelligence+systematic+literature+review) |
+| A4 | `2024_credit_risk_cc_ml_dl.pdf` | Credit Risk Prediction Using Machine Learning and Deep Learning: A Study on Credit Card Customers | Risks 2024 | [DOI](https://doi.org/10.3390/risks12110174) · [Scholar](https://scholar.google.com/scholar?q=Credit+Risk+Prediction+Using+Machine+Learning+and+Deep+Learning+Credit+Card+Customers) |
+| A5 | `2024_credit_risk_ensemble_explainable.pdf` | Effective Credit Risk Prediction Using Ensemble Classifiers With Model Explanation | IEEE Access 2024 | [DOI](https://doi.org/10.1109/access.2024.3445308) · [Scholar](https://scholar.google.com/scholar?q=Effective+Credit+Risk+Prediction+Using+Ensemble+Classifiers+With+Model+Explanation) |
+| A6 | `2024_causal_ml_credit_risk.pdf` | Credit risk prediction based on causal machine learning: Bayesian network learning, default inference, and interpretation | Journal of Forecasting 2024 | [DOI](https://doi.org/10.1002/for.3080) · [Scholar](https://scholar.google.com/scholar?q=Credit+risk+prediction+based+on+causal+machine+learning+Bayesian+network) |
+| A7 | `2024_resampling_calibration_imbalance.pdf` | Understanding random resampling techniques for class imbalance correction and their consequences on calibration and discrimination of clinical prediction models | J. Biomedical Informatics 2024 | [DOI](https://doi.org/10.1016/j.jbi.2024.104666) · [Scholar](https://scholar.google.com/scholar?q=Understanding+random+resampling+techniques+for+class+imbalance+correction+calibration+discrimination) |
+| A8 | `2024_blockchain_abs.pdf` | Analysis of Block Chain Applications in Asset Backed Securitization System | Procedia Computer Science 2024 | [DOI](https://doi.org/10.1016/j.procs.2024.03.204) · [Scholar](https://scholar.google.com/scholar?q=Analysis+of+Block+Chain+Applications+in+Asset+Backed+Securitization+System) |
+| A9 | `2024_green_auto_abs_survey.pdf` | How to green the European auto ABS market? A literature survey | European Financial Management 2024 | [DOI](https://doi.org/10.1111/eufm.12515) · [Scholar](https://scholar.google.com/scholar?q=How+to+green+the+European+auto+ABS+market+literature+survey) |
+| A10 | `2024_structured_factor_copula_banks.pdf` | Structured factor copulas for modeling the systemic risk of European and United States banks | Int. Review of Financial Analysis 2024 | [DOI](https://doi.org/10.1016/j.irfa.2024.103621) · [Scholar](https://scholar.google.com/scholar?q=Structured+factor+copulas+modeling+systemic+risk+European+United+States+banks) |
+| A11 | `2025_airfare_prediction_market_data.pdf` | Airfare prediction: Leveraging market data for better decision-making | Research in Transportation Business & Management 2025 | [DOI](https://doi.org/10.1016/j.rtbm.2025.101408) · [Scholar](https://scholar.google.com/scholar?q=Airfare+prediction+Leveraging+market+data+for+better+decision-making) |
+| A12 | `2024_airline_service_quality_pricing.pdf` | Service-quality and pricing strategies in the airline industry: The role of distance | Economics of Transportation 2024 | [DOI](https://doi.org/10.1016/j.ecotra.2024.100381) · [Scholar](https://scholar.google.com/scholar?q=Service-quality+and+pricing+strategies+in+the+airline+industry+role+of+distance) |
+
+## B. 基础文献（2021–2023）
+
+| # | 建议文件名 | 标题 | 来源 / 年份 | 链接 |
+|---|---|---|---|---|
+| B1 | `2022_class_imbalance_harm.pdf` | The harm of class imbalance corrections for risk prediction models | JAMIA 2022 | [DOI](https://doi.org/10.1093/jamia/ocac093) · [Scholar](https://scholar.google.com/scholar?q=The+harm+of+class+imbalance+corrections+for+risk+prediction+models) |
+| B2 | `2021_balanced_loss_calibration.pdf` | Dynamically Weighted Balanced Loss: Class Imbalanced Learning and Confidence Calibration of Deep Neural Networks | IEEE TNNLS 2021 | [DOI](https://doi.org/10.1109/tnnls.2020.3047335) · [Scholar](https://scholar.google.com/scholar?q=Dynamically+Weighted+Balanced+Loss+Class+Imbalanced+Learning+Confidence+Calibration) |
+| B3 | `2022_bankruptcy_xgboost.pdf` | Bankruptcy Prediction using the XGBoost Algorithm and Variable Importance Feature Engineering | Computational Economics 2022 | [DOI](https://doi.org/10.1007/s10614-021-10227-1) · [Scholar](https://scholar.google.com/scholar?q=Bankruptcy+Prediction+using+the+XGBoost+Algorithm+and+Variable+Importance+Feature+Engineering) |
+| B4 | `2022_financial_distress_deep_learning.pdf` | Deep Learning-Based Model for Financial Distress Prediction | Annals of Operations Research 2022 | [DOI](https://doi.org/10.1007/s10479-022-04766-5) · [Scholar](https://scholar.google.com/scholar?q=Deep+Learning-Based+Model+for+Financial+Distress+Prediction) |
+| B5 | `2023_real_estate_security_token.pdf` | Real estate security token offerings and the secondary market: Driven by crypto hype or fundamentals? | Journal of Banking & Finance 2023 | [DOI](https://doi.org/10.1016/j.jbankfin.2023.106940) · [Scholar](https://scholar.google.com/scholar?q=Real+estate+security+token+offerings+and+the+secondary+market) |
+| B6 | `2021_abs_expressway_usufruct.pdf` | Sustainable Construction and Financing—Asset-Backed Securitization of Expressway's Usufruct with Redeemable Rights | Sustainability 2021 | [DOI](https://doi.org/10.3390/su13169113) · [Scholar](https://scholar.google.com/scholar?q=Asset-Backed+Securitization+of+Expressway+Usufruct+with+Redeemable+Rights) |
+| B7 | `2021_defi_smart_contract_markets.pdf` | Decentralized Finance: On Blockchain- and Smart Contract-Based Financial Markets | St. Louis Fed Review 2021 | [DOI](https://doi.org/10.20955/r.103.153-74) · [Scholar](https://scholar.google.com/scholar?q=Decentralized+Finance+On+Blockchain+and+Smart+Contract-Based+Financial+Markets) |
+| B8 | `2023_hotel_booking_curve_ml.pdf` | Application of machine learning to cluster hotel booking curves for hotel demand forecasting | IJHM 2023 | [DOI](https://doi.org/10.1016/j.ijhm.2023.103455) · [Scholar](https://scholar.google.com/scholar?q=Application+of+machine+learning+to+cluster+hotel+booking+curves+for+hotel+demand+forecasting) |
+| B9 | `2021_hospitality_financial_distress.pdf` | Financial distress in the hospitality industry during the Covid-19 disaster | Tourism Management 2021 | [DOI](https://doi.org/10.1016/j.tourman.2021.104301) · [Scholar](https://scholar.google.com/scholar?q=Financial+distress+in+the+hospitality+industry+during+the+Covid-19+disaster) |
+| B10 | `2021_managing_hotel_revenue_covid.pdf` | Managing hotel revenue amid the COVID-19 crisis | IJCHM 2021 | [DOI](https://doi.org/10.1108/ijchm-06-2020-0623) · [Scholar](https://scholar.google.com/scholar?q=Managing+hotel+revenue+amid+the+COVID-19+crisis) |
+| B11 | `2022_domestic_tourism_hotel_demand.pdf` | Domestic tourism and the resilience of hotel demand | Annals of Tourism Research 2022 | [DOI](https://doi.org/10.1016/j.annals.2022.103352) · [Scholar](https://scholar.google.com/scholar?q=Domestic+tourism+and+the+resilience+of+hotel+demand) |
+| B12 | `2021_chairs_air_transport_simulator.pdf` | CHAIRS: A choice-based air transport simulator applied to airline competition and revenue management | TR Part A 2021 | [DOI](https://doi.org/10.1016/j.tra.2021.11.010) · [Scholar](https://scholar.google.com/scholar?q=CHAIRS+choice-based+air+transport+simulator+airline+competition+revenue+management) |
+| B13 | `2024_airline_competition_review.pdf` | Airline competition: A comprehensive review of recent research | J. Air Transport Research Society 2024 | [DOI](https://doi.org/10.1016/j.jatrs.2024.100013) · [Scholar](https://scholar.google.com/scholar?q=Airline+competition+A+comprehensive+review+of+recent+research) |
+| B14 | `2023_hidden_city_ticketing.pdf` | The determinants of hidden-city ticketing: Competition, hub-and-spoke networks, and advance-purchase requirements | TR Part E 2023 | [DOI](https://doi.org/10.1016/j.tre.2023.103086) · [Scholar](https://scholar.google.com/scholar?q=The+determinants+of+hidden-city+ticketing+Competition+hub-and-spoke) |
+| B15 | `2024_clean_energy_systemic_copula.pdf` | Measuring the Systemic Risk of Clean Energy Markets Based on the Dynamic Factor Copula Model | Systems 2024 | [DOI](https://doi.org/10.3390/systems12120584) · [Scholar](https://scholar.google.com/scholar?q=Measuring+the+Systemic+Risk+of+Clean+Energy+Markets+Dynamic+Factor+Copula) |
+| B16 | `2023_copula_default_dependence.pdf` | Default dependence in the insurance and banking sectors: A copula approach | JIFMIM 2023 | [DOI](https://doi.org/10.1016/j.intfin.2023.101911) · [Scholar](https://scholar.google.com/scholar?q=Default+dependence+in+the+insurance+and+banking+sectors+A+copula+approach) |
+| B17 | `2025_miles_as_capital.pdf` | Miles as Capital: How Frequent Flyer Programs sustained North American Airlines During COVID-19 | Preprint 2025 | [DOI](https://doi.org/10.13140/rg.2.2.32889.43360) · [Scholar](https://scholar.google.com/scholar?q=Miles+as+Capital+How+Frequent+Flyer+Programs+sustained+North+American+Airlines) |
