@@ -21,3 +21,13 @@ data/raw/
 
 # Local tooling
 .tools/
+
+# Paper build artifacts
+paper/build/
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz

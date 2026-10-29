@@ -1,5 +1,10 @@
 # 改稿方案：FSR 机制设计论文 → 证券化仿真系统论文
 
+> 历史工作文档：本文件中的 `output/`、`src/` 等路径来自原始工作树，当前仓库
+> 的脚本位于 `docs/reference/`，数据位于 `data/`。方法演进的总览见
+> [`docs/OLD_METHODS.md`](../OLD_METHODS.md)，当前论文入口见
+> [`paper/manuscript.md`](../../paper/manuscript.md)。
+
 > 目标：把 `output/fsr_framework_paper.tex`（24 页 / 1178 行）改造为一篇面向 CS/EI 会场的
 > **仿真系统**论文（9–10 页），重心从"提出新资产类别"转为"系统 + 算法 + 机器学习组件"。
 >
