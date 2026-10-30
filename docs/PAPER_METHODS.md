@@ -206,6 +206,8 @@ Merton DD + GARCH，设 PD 上限 0.50；另有 KMV 变体。在这类借款人�
 
 | 文件 | 说明 |
 |---|---|
+| `papers/README.md` | 文献索引、PDF 获取状态与 Zotero 分类说明 |
+| `papers/hotel_flight_fsr.bib` | 25 条经 DOI/OpenAlex 核验的可复现书目 |
 | `docs/reference/REVISION_PLAN.md` | 逐节改稿方案，含全部 P0 结果 |
 | `docs/reference/p0_feasibility.py` | 可行性实验：退出是否可预测？ |
 | `docs/reference/p0_baselines.py` | 特征消融、单特征与结构式基线 |
