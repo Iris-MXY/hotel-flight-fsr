@@ -1,7 +1,7 @@
 """
-12-Quarter DB1B Panel EDA: Competition Paradox Validation.
-Validates CV ~ N_carriers across all 13 available quarters (2022Q1-2025Q1).
-Outputs: per-quarter competition paradox stats + pooled summary.
+12 个季度 DB1B 面板探索性分析：竞争悖论验证。
+在全部 13 个可用季度（2022Q1–2025Q1）上验证票价变异系数与航司数量的关系。
+输出：各季度竞争悖论统计与汇总结果。
 """
 import pandas as pd, numpy as np, os, glob, json
 
@@ -9,9 +9,9 @@ BASE = r"C:\Users\weida\Desktop\酒店研究\data\flight_prices_real"
 OUTPUT = os.path.join(BASE, "panel_results")
 os.makedirs(OUTPUT, exist_ok=True)
 
-# Find all quarter directories
+# 查找所有季度目录
 quarters = sorted(glob.glob(os.path.join(BASE, "db1b_*")))
-print(f"Found {len(quarters)} quarter directories:\n")
+print(f"找到 {len(quarters)} 个季度目录：\n")
 for q in quarters:
     print(f"  {os.path.basename(q)}")
 
@@ -21,15 +21,15 @@ for qdir in quarters:
     qname = os.path.basename(qdir)
     csv_files = glob.glob(os.path.join(qdir, "*.csv"))
     if not csv_files:
-        print(f"\n[SKIP] {qname}: no CSV found", flush=True)
+        print(f"\n[跳过] {qname}：未找到 CSV 文件", flush=True)
         continue
 
     csv_path = csv_files[0]
     print(f"\n{'='*60}")
-    print(f"Processing {qname} ({os.path.basename(csv_path)})")
+    print(f"正在处理 {qname}（{os.path.basename(csv_path)}）")
     print(f"{'='*60}")
 
-    # Read in chunks, aggregate at route level
+    # 分块读取，并在航线层面聚合
     route_data = {}  # (origin, dest) -> {fares: [], carriers: set, pax: 0}
     total_rows = 0
     chunk_n = 0
@@ -51,15 +51,15 @@ for qdir in quarters:
                 route_data[key]['pax'] += row['Passengers']
 
             if chunk_n % 5 == 0:
-                print(f"  {chunk_n * 0.5:.0f}M rows, {len(route_data):,} routes...", flush=True)
+                print(f"  已处理 {chunk_n * 0.5:.0f} 百万行，{len(route_data):,} 条航线……", flush=True)
 
-        print(f"  Total: {total_rows:,} rows, {len(route_data):,} routes")
+        print(f"  合计：{total_rows:,} 行，{len(route_data):,} 条航线")
 
-        # Aggregate: compute CV per route
+        # 聚合：计算每条航线的变异系数
         route_stats = []
         for (orig, dest), data in route_data.items():
             fares = np.array(data['fares'])
-            if len(fares) >= 10:  # Require at least 10 observations
+            if len(fares) >= 10:  # 每条航线至少保留 10 个观测
                 mean_f = np.mean(fares)
                 std_f = np.std(fares)
                 cv = std_f / mean_f if mean_f > 0 else np.nan
@@ -77,9 +77,9 @@ for qdir in quarters:
                 })
 
         df_routes = pd.DataFrame(route_stats).dropna(subset=['cv'])
-        print(f"  Routes with >=10 obs: {len(df_routes):,}")
+        print(f"  观测数不少于 10 的航线：{len(df_routes):,}")
 
-        # Competition paradox check: CV by N_carriers
+        # 检验竞争悖论：按航司数量分组统计变异系数
         cv_by_n = df_routes.groupby('n_carriers').agg(
             n_routes=('cv', 'count'),
             mean_cv=('cv', 'mean'),
@@ -88,17 +88,17 @@ for qdir in quarters:
             mean_fare=('mean_fare', 'mean'),
         ).reset_index()
 
-        print(f"\n  Competition Paradox ({qname}):", flush=True)
+        print(f"\n  竞争悖论（{qname}）：", flush=True)
         for _, row in cv_by_n.iterrows():
-            print(f"    {int(row['n_carriers'])} carrier(s): {int(row['n_routes']):,} routes, CV={row['mean_cv']:.3f} (med={row['median_cv']:.3f})")
+            print(f"    {int(row['n_carriers'])} 家航司：{int(row['n_routes']):,} 条航线，CV={row['mean_cv']:.3f}（中位数={row['median_cv']:.3f}）")
 
-        # OLS: CV ~ n_carriers
+        # 普通最小二乘回归：CV ~ 航司数量
         from sklearn.linear_model import LinearRegression
         X = df_routes[['n_carriers']].values
         y = df_routes['cv'].values
         reg = LinearRegression().fit(X, y)
 
-        # Also with log(n_carriers)
+        # 同时估计对数航司数量模型
         X_log = np.log(df_routes[['n_carriers']].values)
         reg_log = LinearRegression().fit(X_log, y)
 
@@ -119,20 +119,20 @@ for qdir in quarters:
             'r2_log': reg_log.score(X_log, y),
         })
 
-        print(f"  beta (linear): {reg.coef_[0]:.6f}, R^2={reg.score(X,y):.4f}", flush=True)
-        print(f"  beta (log): {reg_log.coef_[0]:.6f}, R^2={reg_log.score(X_log,y):.4f}", flush=True)
+        print(f"  线性模型 beta：{reg.coef_[0]:.6f}，R^2={reg.score(X,y):.4f}", flush=True)
+        print(f"  对数模型 beta：{reg_log.coef_[0]:.6f}，R^2={reg_log.score(X_log,y):.4f}", flush=True)
 
     except Exception as e:
-        print(f"  [ERROR] {qname}: {e}")
+        print(f"  [错误] {qname}：{e}")
         results.append({'quarter': qname, 'error': str(e)})
 
-# === CROSS-QUARTER SUMMARY ===
+# === 跨季度汇总 ===
 print(f"\n{'='*60}")
-print("12-QUARTER CROSS-SECTION SUMMARY")
+print("12 个季度横截面汇总")
 print(f"{'='*60}")
 
 valid = [r for r in results if 'beta_linear' in r]
-print(f"\nQuarters with valid results: {len(valid)}/{len(quarters)}")
+print(f"\n有效季度数：{len(valid)}/{len(quarters)}")
 
 if valid:
     betas = [r['beta_linear'] for r in valid]
@@ -140,31 +140,31 @@ if valid:
     cv1s = [r['cv_n1'] for r in valid if not np.isnan(r['cv_n1'])]
     cv_maxs = [r['cv_n_max'] for r in valid]
 
-    print(f"\n  beta (CV ~ N_carriers):", flush=True)
-    print(f"    Mean: {np.mean(betas):.6f}, Std: {np.std(betas):.6f}", flush=True)
-    print(f"    Min: {np.min(betas):.6f} ({valid[np.argmin(betas)]['quarter']})", flush=True)
-    print(f"    Max: {np.max(betas):.6f} ({valid[np.argmax(betas)]['quarter']})", flush=True)
-    print(f"    All beta > 0: {all(b > 0 for b in betas)}", flush=True)
+    print(f"\n  beta（CV ~ 航司数量）：", flush=True)
+    print(f"    均值：{np.mean(betas):.6f}，标准差：{np.std(betas):.6f}", flush=True)
+    print(f"    最小值：{np.min(betas):.6f}（{valid[np.argmin(betas)]['quarter']}）", flush=True)
+    print(f"    最大值：{np.max(betas):.6f}（{valid[np.argmax(betas)]['quarter']}）", flush=True)
+    print(f"    所有 beta 均为正：{all(b > 0 for b in betas)}", flush=True)
 
     print(f"\n  R^2:", flush=True)
-    print(f"    Mean: {np.mean(r2s):.4f}, Range: [{np.min(r2s):.4f}, {np.max(r2s):.4f}]", flush=True)
+    print(f"    均值：{np.mean(r2s):.4f}，范围：[{np.min(r2s):.4f}, {np.max(r2s):.4f}]", flush=True)
 
     if cv1s and cv_maxs:
-        print(f"\n  CV range:", flush=True)
-        print(f"    Monopoly (N=1): mean CV = {np.mean(cv1s):.3f}", flush=True)
-        print(f"    Max competition: mean CV = {np.mean(cv_maxs):.3f}", flush=True)
-        print(f"    deltaCV: {np.mean(cv_maxs) - np.mean(cv1s):.3f}", flush=True)
+        print(f"\n  CV 范围：", flush=True)
+        print(f"    垄断（航司数=1）：平均 CV = {np.mean(cv1s):.3f}", flush=True)
+        print(f"    竞争最充分：平均 CV = {np.mean(cv_maxs):.3f}", flush=True)
+        print(f"    CV 差值：{np.mean(cv_maxs) - np.mean(cv1s):.3f}", flush=True)
 
-    # Save full results
+    # 保存完整结果
     df_results = pd.DataFrame(valid)
     csv_path = os.path.join(OUTPUT, "competition_paradox_12q.csv")
     df_results.to_csv(csv_path, index=False)
-    print(f"\nResults saved: {csv_path}", flush=True)
+    print(f"\n结果已保存：{csv_path}", flush=True)
 
-    # Per-quarter detail
-    print(f"\n{'Quarter':<15} {'Routes':>10} {'beta_lin':>10} {'R^2':>8} {'CV(N=1)':>10} {'CV(max)':>10} {'beta>0':>8}", flush=True)
+    # 各季度明细
+    print(f"\n{'季度':<15} {'航线数':>10} {'线性 beta':>10} {'R^2':>8} {'CV(1家)':>10} {'CV(最大)':>10} {'beta>0':>8}", flush=True)
     print("-" * 73, flush=True)
     for r in valid:
-        print(f"{r['quarter']:<15} {r['n_routes']:>10,} {r['beta_linear']:>10.6f} {r['r2_linear']:>8.4f} {r['cv_n1']:>10.3f} {r['cv_n_max']:>10.3f} {'YES' if r['beta_linear'] > 0 else 'NO':>8}", flush=True)
+        print(f"{r['quarter']:<15} {r['n_routes']:>10,} {r['beta_linear']:>10.6f} {r['r2_linear']:>8.4f} {r['cv_n1']:>10.3f} {r['cv_n_max']:>10.3f} {'是' if r['beta_linear'] > 0 else '否':>8}", flush=True)
 
-print("\nDone.")
+print("\n处理完成。")

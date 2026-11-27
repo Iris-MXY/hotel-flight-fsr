@@ -1,345 +1,290 @@
-# A Simulation System for Future Service Rights Securitization
+# 面向未来服务权的证券化仿真系统
 
-## Architecture, Algorithms, and Machine-Learning Credit Assessment
+## 系统架构、算法与机器学习信用评估
 
-> Working draft. This Markdown file is the canonical manuscript source during P0/P1.
-> The submission version will be exported to LaTeX after the experiment protocol is frozen.
+> 工作稿。在 P0/P1 阶段，本 Markdown 文件是论文正文的唯一主稿。
+> 实验协议冻结后再导出 LaTeX 投稿版本。
 >
-> Status: outline plus draft text. `[TODO: ...]` marks missing evidence or
-> unresolved implementation details.
+> 当前状态：提纲加正文草稿。`[TODO: ...]` 表示尚缺实验证据或实现细节。
 
-**Keywords:** financial technology; asset securitization; Monte Carlo simulation;
-credit risk; machine learning; probability calibration
+**关键词：** 金融科技；资产证券化；蒙特卡洛仿真；信用风险；机器学习；概率校准
 
 ---
 
-## Abstract
+## 摘要
 
-Future service rights (FSR) turn a unit of perishable service capacity, such as a
-hotel room-night or an airline seat, into a tradable claim. Securitizing these
-claims requires a reliable estimate of default probability, but structural credit
-models assume borrower-level asset values, debt structures, and sufficiently long
-price histories that are rarely available for small service providers. We present
-an offline simulation system for FSR securitization that combines copula-based
-dependent default sampling, a cash-flow waterfall with overcollateralization and
-interest-coverage triggers, stratified asset-pool construction, and parallel Monte
-Carlo evaluation. For credit assessment, we recast probability of default as a
-panel-learning problem and predict whether a hotel exits the platform three months
-after the observation month. On a price panel covering 1,707,918 hotel-day records,
-the model achieves AUCs from 0.8290 to 0.8956 across three cohorts. A dense-history
-subsample shows that Merton and KMV baselines are weakly informative and frequently
-hit the PD cap. We further show that discrimination and calibration can diverge
-sharply: the AUC range across seven configurations is 0.0355, while the expected
-calibration error range is 0.3050. Because tranche losses depend on absolute PD
-levels rather than ranking alone, calibration is a first-order requirement for
-connecting machine learning to securitization decisions.
+未来服务权（Future Service Rights，FSR）把酒店客房夜、航空座位等易逝服务产能
+转化为可交易的索取权。对此类权利进行证券化，需要可靠的概率违约（PD）估计；
+但结构式信用模型通常依赖借款人资产价值、债务结构和足够长的价格历史，这些信息
+在小型服务供应商上往往不可得。本文提出一个面向 FSR 的离线证券化仿真系统，
+将 copula 相依违约抽样、含超额抵押与利息覆盖触发器的现金流瀑布、分层资产池
+构建和并行蒙特卡洛评估整合到统一流程中。在信用评估部分，我们把 PD 估计重构为
+面板学习问题，预测酒店在观测月份三个月后是否退出平台。基于覆盖
+1,707,918 条酒店日价格记录的价格面板，模型在三个队列上的 AUC 为
+0.8290 至 0.8956。记录密集子样本上的结果表明，Merton 与 KMV 基线所含信息有限，
+且大量样本触及 PD 上限。进一步结果显示，判别力与校准可能明显脱钩：七种配置的
+AUC 极差仅为 0.0355，而期望校准误差（ECE）极差达到 0.3050。由于分层损失取决于
+PD 的绝对水平而不只是排序，概率校准是把机器学习接入证券化决策的关键前提。
 
 ---
 
-## 1. Introduction
+## 1. 引言
 
-Hotel room-nights and airline seats are perishable inventory [@talluri2004theory]. Once the service
-window passes, unused capacity has no value. Platforms and operators commonly sell
-this capacity through uncertain future demand, while small suppliers face working
-capital constraints. FSR provides a possible financing mechanism: a supplier issues
-a claim on one future unit of capacity, and the platform or a secondary market
-allocates that claim to users and investors.
+酒店客房夜和航空座位都属于易逝库存 [@talluri2004theory]。服务窗口一旦过去，
+未使用产能便不再具有价值。平台和运营商通常通过未来需求出售这类产能，而小型
+供应商又面临营运资金约束。FSR 提供了一种可能的融资机制：供应商对未来一单位
+服务产能发行索取权，平台或二级市场再将这一索取权分配给用户和投资者。
 
-The economic mechanism alone is not enough. A securitized pool needs a loss
-distribution, a tranche structure, and a defensible estimate of default
-probability. Structural credit models such as Merton distance-to-default and KMV
-are natural baselines [@merton1974pricing; @kealhofer2003quantifying], but they
-require an asset-value process, a debt boundary, and a sufficiently informative
-volatility signal. Prior validation also shows that distance-to-default does not
-translate mechanically into a reliable default forecast
-[@bharath2008forecasting]. For individual hotels observed through an online travel
-platform, these variables are absent. Our preliminary experiments show that the
-available volatility signal is close to random on the full cohort, and the
-structural baselines concentrate at the upper PD bound.
+仅有一个经济机制并不够。证券化资产池还需要损失分布、分层结构和可辩护的 PD
+估计。Merton 距离违约和 KMV 是自然的结构式基线
+[@merton1974pricing; @kealhofer2003quantifying]，但它们要求资产价值过程、
+债务边界和具有足够信息的波动率信号。已有验证也表明，距离违约并不能机械地转化为
+可靠的违约预测 [@bharath2008forecasting]。对于通过在线旅游平台观测到的单体酒店，
+这些变量通常不可得。我们的预实验显示，可用波动率信号在全队列上接近随机，
+结构式基线则大量集中在 PD 上限。
 
-This paper makes three contributions:
+本文有三项贡献：
 
-1. We design an offline FSR securitization simulator with copula-based dependent
-   default sampling, a trigger-aware cash-flow waterfall, stratified asset-pool
-   construction, and parallel Monte Carlo evaluation.
-2. We replace the structural PD core with a panel-feature learning model and
-   evaluate it on 1.7 million real hotel-day price records.
-3. We show that probability calibration, rather than discrimination alone,
-   determines downstream tranche risk and rating behavior.
+1. 设计一个离线 FSR 证券化仿真器，包含 copula 相依违约抽样、带触发器的
+   现金流瀑布、分层资产池构建和并行蒙特卡洛评估。
+2. 用面板特征学习模型替代结构式 PD 核心，并在 170 万条真实酒店日价格记录上评估。
+3. 证明概率校准而不只是判别力决定下游分层风险与评级行为。
 
 ---
 
-## 2. Related Work
+## 2. 相关工作
 
-### 2.1 Structural Credit Models
+### 2.1 结构式信用模型
 
-Merton models treat equity as a call option on the firm's assets and derive a
-distance-to-default from asset value, debt, and volatility [@merton1974pricing].
-KMV extends the same logic with an empirical default boundary
-[@kealhofer2003quantifying]. These models are widely used for listed firms, but
-their predictive usefulness depends on input quality and calibration; out-of-sample
-evidence for the Merton distance-to-default model is mixed
-[@bharath2008forecasting]. Platform merchants rarely expose the required debt
-boundary and long asset-price history.
+Merton 模型把企业权益视为企业资产上的看涨期权，并从资产价值、债务和波动率推导
+距离违约 [@merton1974pricing]。KMV 在此基础上引入经验违约边界
+[@kealhofer2003quantifying]。这类模型广泛用于上市公司，但其预测价值取决于输入
+质量和校准；Merton 距离违约模型的样本外证据也并不一致
+[@bharath2008forecasting]。平台商户很少暴露所需债务边界和长期资产价格历史。
 
-### 2.2 Machine Learning for Default Prediction
+### 2.2 机器学习违约预测
 
-Tree ensembles and deep models have been applied extensively to credit scoring and
-bankruptcy prediction [@dumitrescu2022creditscoring;
-@yang2023creditdnn; @chen2024imbalanced; @benjabeur2023xgboost;
-@elhoseny2025distress]. More recent work combines ensemble or causal machine
-learning with model explanation [@aruleba2024ensemblecredit;
-@liu2024causalcredit], while model-risk studies emphasize that predictive
-performance must be evaluated in the context of the financial decision
-[@alonso2022modelrisk]. Most credit-scoring studies still emphasize ranking
-metrics such as AUC, whereas tranche losses depend on the absolute probability.
+树集成模型和深度模型已广泛用于信用评分与破产预测
+[@dumitrescu2022creditscoring; @yang2023creditdnn; @chen2024imbalanced;
+@benjabeur2023xgboost; @elhoseny2025distress]。近期研究进一步将集成学习或因果
+机器学习与模型解释结合 [@aruleba2024ensemblecredit; @liu2024causalcredit]，
+模型风险研究则强调预测性能必须放在具体金融决策中评估
+[@alonso2022modelrisk]。多数信用评分研究仍强调 AUC 等排序指标，而分层损失
+依赖的是绝对违约概率。
 
-### 2.3 Probability Calibration
+### 2.3 概率校准
 
-Brier scores, reliability diagrams, and expected calibration error measure whether
-predicted probabilities match observed frequencies [@brier1950verification;
-@silvafilho2023calibration]. Platt scaling and isotonic regression are common
-post-processing approaches [@platt1999probabilistic; @zadrozny2002transforming;
-@niculescu2005predicting], and modern deep models can be miscalibrated despite
-high accuracy [@guo2017calibration]. Rebalancing can improve a classifier's
-apparent minority-class sensitivity while damaging probability calibration
-[@vandengoorbergh2022imbalance; @piccininni2024resampling]. Calibration may also
-deteriorate under distribution shift [@xiao2025calibrationshift].
+Brier 分数、可靠性图和期望校准误差衡量预测概率是否与实际频率一致
+[@brier1950verification; @silvafilho2023calibration]。Platt 缩放和 isotonic
+回归是常见的后处理校准方法 [@platt1999probabilistic;
+@zadrozny2002transforming; @niculescu2005predicting]，现代深度模型即使分类准确，
+也可能存在明显校准误差 [@guo2017calibration]。类别重平衡可能提高少数类别的
+表观敏感度，却会破坏概率校准 [@vandengoorbergh2022imbalance;
+@piccininni2024resampling]。分布漂移还可能进一步损害校准
+[@xiao2025calibrationshift]。
 
-### 2.4 Tokenized Assets and Service-Right Securitization
+### 2.4 代币化资产与服务权证券化
 
-Tokenized real-world assets and frequent-flyer-backed financing are the closest
-practical precedents for FSR [@schwiderowski2023nft;
-@kreppmeier2023securitytokens; @berglund2025miles]. Airline loyalty programs have
-become standalone businesses whose mile liabilities and partner cash flows can be
-valued and financed [@deboer2018standalone; @gao2020valuingmiles]. Public filings
-show that AAdvantage program assets have secured senior debt
-[@american2021aadvantage], while Delta and United report material prepayments and
-pledged loyalty-program assets [@delta2015skymiles; @united2013mileageplus].
-Overbooking and capacity control provide the operational constraints under which
-future capacity is sold [@beckmann1958decision; @rothstein1971airlineoverbooking;
-@littlewood1972forecasting; @talluri2004theory; @pimentel2019hoteloverbooking;
-@schwartz2025hoteloverbooking].
+代币化真实世界资产和常旅客计划融资是 FSR 最接近的实践先例
+[@schwiderowski2023nft; @kreppmeier2023securitytokens; @berglund2025miles]。
+航空常旅客计划已发展为可独立估值和融资的业务，其里程负债与合作方现金流能够
+形成可定价资产 [@deboer2018standalone; @gao2020valuingmiles]。公开文件显示，
+AAdvantage 计划资产可为高级担保债务提供担保 [@american2021aadvantage]；
+达美航空和美国联合航空也披露了与常旅客计划相关的大额预付款或质押资产
+[@delta2015skymiles; @united2013mileageplus]。超额预订与容量控制则界定了未来
+服务产能出售所面对的运营约束 [@beckmann1958decision;
+@rothstein1971airlineoverbooking; @littlewood1972forecasting;
+@talluri2004theory; @pimentel2019hoteloverbooking;
+@schwartz2025hoteloverbooking]。
 
 ---
 
-## 3. Problem Definition and System Overview
+## 3. 问题定义与系统概览
 
-### 3.1 Future Service Rights
+### 3.1 未来服务权
 
-An FSR represents a claim on one unit of future perishable service capacity. The
-two instances studied here are a hotel room-night and an airline seat. The basic
-unit in the secondary market is a time-right (TR). A TR can be redeemed through
-continuous offset, discounted physical service, or transfer.
+一个 FSR 表示对未来一单位易逝服务产能的索取权。本文研究两个实例：酒店客房夜
+和航空座位。二级市场的基本单位是时权（Time-Right，TR）。TR 可以通过连续冲抵、
+折扣实物服务或转让进行兑付。
 
-The simulator is intentionally offline. It evaluates issuance, risk, and tranche
-outcomes before any deployment decision. We do not claim that the prototype is
-already deployed on-chain.
+本文的仿真器定位于离线评估，用于在执行部署决策前分析发行、风险和分层结果。
+我们不主张该原型已经完成链上部署。
 
-### 3.2 System Pipeline
+### 3.2 系统流程
 
-The system pipeline is:
+系统流程为：
 
 ```text
-asset pool -> stratified sampling -> credit model -> copula sampling
-           -> cash-flow waterfall -> tranche losses -> rating
+资产池 -> 分层抽样 -> 信用模型 -> copula 抽样
+       -> 现金流瀑布 -> 分层损失 -> 评级
 ```
 
-The platform acts as a market maker. The issuer sells future capacity at a
-wholesale price, the platform retails the corresponding claims, and the cash-flow
-engine allocates receipts across senior, mezzanine, junior, and equity tranches.
+平台作为做市商：发行方按批发价格出售未来服务产能，平台向用户和投资者零售对应
+索取权，现金流引擎再按优先级、夹层、劣后和权益层级分配回款。
 
-`[TODO: Insert the system architecture figure and state/data-flow description.]`
+`[TODO: 补充系统架构图，以及状态流和数据流说明。]`
 
 ---
 
-## 4. Algorithms
+## 4. 算法
 
-### 4.1 A1: Dependent Default Sampling
+### 4.1 A1：相依违约抽样
 
-We sample latent variables through a copula and map them to default times
-[@li2000defaultcorrelation]. The latent construction must preserve unit variance:
+我们通过 copula 抽样潜变量并映射为违约时间 [@li2000defaultcorrelation]。
+潜变量构造必须保持单位方差：
 
 ```text
-u = c * Z * w + epsilon * (1 - w),    with Var(u) = 1
+u = c * Z * w + epsilon * (1 - w)，且 Var(u) = 1
 ```
 
-If `Var(u)` is not one, `Phi(u)` is not uniformly distributed and the realized
-default rate is systematically biased. In our implementation audit, omitting the
-normalization produced roughly 3x and 42x deviations from the requested default
-rate at `p = 0.056` and `p = 0.001`, respectively. This normalization is therefore
-a core implementation requirement, not a cosmetic detail.
+若 `Var(u)` 不等于 1，`Phi(u)` 就不再服从均匀分布，实际违约率会出现系统性偏差。
+在实现审计中，当目标违约率分别为 `p = 0.056` 和 `p = 0.001` 时，未做归一化
+会产生约 3 倍和 42 倍的偏差。因此，归一化属于核心实现要求，而不是实现细节。
 
-### 4.2 A2: Cash-Flow Waterfall
+### 4.2 A2：现金流瀑布
 
-At each payment date, collected cash pays senior interest and principal first,
-then mezzanine, junior, and equity. Overcollateralization and interest-coverage
-tests can switch the structure into accelerated amortization. Losses propagate
-from the bottom tranche upward.
+在每个支付日，回款首先支付优先级利息和本金，然后依次支付夹层、劣后和权益。
+超额抵押与利息覆盖测试可以把结构切换为加速摊还。损失则从底层向上层传导。
 
-`[TODO: Add the state-transition pseudocode.]`
+`[TODO: 补充状态转移伪代码。]`
 
-### 4.3 A3: Stratified Asset-Pool Construction
+### 4.3 A3：分层资产池构建
 
-Hotel pools are stratified by hotel level and constrained by geographic
-concentration. Flight pools are stratified by distance band and constrained by
-carrier concentration. The current sampler uses a minimum allocation per stratum,
-so the realized pool size can differ from the target size; the manuscript must
-report the realized size rather than only the requested size.
+酒店资产池按酒店档位分层，并施加地理集中度约束。机票资产池按距离档分层，
+并限制航司集中度。当前抽样器为每个层设置最低分配量，因此实际资产池规模可能
+偏离目标规模；论文应报告实际规模，而不是只报告目标规模。
 
-### 4.4 A4: Time-Differentiated Issuance
+### 4.4 A4：时段差异化发行
 
-Issuance uses separate price bands for holidays, weekends, and weekdays. The
-issuance quantity is:
+发行价格分为节假日、周末和工作日三档。发行量为：
 
 ```text
-quantity = rooms_or_seats * days * oversubscription_multiplier
+发行量 = 房间数或座位数 × 天数 × 超发倍数
 ```
 
 ---
 
-## 5. Machine-Learning Probability of Default
+## 5. 机器学习概率违约模型
 
-### 5.1 Learning Task
+### 5.1 学习任务
 
-For hotel `i` observed in month `t`, the model predicts whether the hotel is absent
-from the platform panel in month `t + 3`. This target is called platform exit. It
-is a measurable proxy, not a verified legal default.
+对于月份 `t` 观测到的酒店 `i`，模型预测该酒店在 `t + 3` 月是否已从平台面板中
+消失。该标签称为“平台退出”。它是一个可测量的代理指标，并不等同于经核实的法律违约。
 
-### 5.2 Data and Cohorts
+### 5.2 数据与队列
 
-The hotel panel contains 1,707,918 hotel-day records and 16,257 hotels from March
-to June 2024 in Chengdu. The main cohort contains 14,851 hotels with a 7.84% exit
-rate. Rolling cohorts are used as a stability check. The price features follow the
-booking-curve and demand-forecasting literature [@viverit2023hotelbooking;
-@rekiek2024bookingtrends; @henriques2024hotelreview;
-@contessi2024hoteloccupancy].
+酒店面板覆盖 2024 年 3 月至 6 月的成都市场，共 16,257 家酒店、
+1,707,918 条酒店日价格记录。主队列包含 14,851 家酒店，退出率为 7.84%。
+滚动队列用于稳定性检查。价格特征的设计参考了酒店预订曲线与需求预测研究
+[@viverit2023hotelbooking; @rekiek2024bookingtrends;
+@henriques2024hotelreview; @contessi2024hoteloccupancy]。
 
-### 5.3 Features
+### 5.3 特征
 
-Features are computed only from the observation month:
+所有特征只使用观测月份的数据：
 
-| Group | Features |
+| 特征组 | 具体特征 |
 |---|---|
-| Price level | Mean, median, minimum, maximum |
-| Volatility | Log-return standard deviation, annualized volatility, range ratio |
-| Trend | Monthly change, slope, momentum |
-| Shape | Day-of-week pattern, within-month variation, residual seasonality |
-| Completeness | Record count, days present, observation span |
-| Structure | Hotel level, district, longitude, latitude |
-| Competition | Same-district and same-level hotel count |
+| 价格水平 | 均值、中位数、最小值、最大值 |
+| 波动性 | 对数收益标准差、年化波动率、极差比 |
+| 趋势 | 月度变化、斜率、动量 |
+| 形态 | 周内模式、月内变化、季节残差 |
+| 完整度 | 记录数、在场天数、观测跨度 |
+| 结构 | 酒店档位、区县、经纬度 |
+| 竞争 | 同区县且同档位的酒店数量 |
 
-Completeness is the strongest single group and is also a known confounder. We
-therefore report ablations with and without completeness and compare a price-only
-model.
+完整度是最强的单一特征组，同时也是已知混淆因素。因此，我们同时报告包含和排除
+完整度的消融结果，并比较纯价格模型。
 
-### 5.4 Models and Baselines
+### 5.4 模型与基线
 
-The main models are random forest and LightGBM [@breiman2001randomforest;
-@ke2017lightgbm], with logistic regression as a statistical baseline and a GRU as
-a sequence-model extension [@cho2014gru]. Merton and KMV are structural baselines
-on the dense-history subsample; the structural volatility input is estimated with
-a GARCH baseline [@bollerslev1986garch].
+主模型为随机森林和 LightGBM [@breiman2001randomforest; @ke2017lightgbm]，
+逻辑回归作为统计基线，GRU 作为序列模型扩展 [@cho2014gru]。Merton 和 KMV
+是在记录密集子样本上运行的结构式基线；结构式波动率输入采用 GARCH 基线
+[@bollerslev1986garch]。
 
-### 5.5 Evaluation
+### 5.5 评估
 
-We report AUC and PR-AUC for discrimination, and Brier score, expected calibration
-error (ECE), and reliability diagrams for calibration [@brier1950verification;
-@naeini2015ece]. The downstream experiment feeds each calibrated PD vector into
-the same cash-flow waterfall.
+判别力采用 AUC 和 PR-AUC，校准采用 Brier 分数、期望校准误差（ECE）和可靠性图
+[@brier1950verification; @naeini2015ece]。下游实验把每个经过校准的 PD 向量
+输入同一现金流瀑布。
 
-### 5.6 Preliminary Results
+### 5.6 预实验结果
 
-| Cohort | N | Exit rate | AUC | PR-AUC |
+| 队列 | 样本量 | 退出率 | AUC | PR-AUC |
 |---|---:|---:|---:|---:|
-| 2024-03 -> 2024-06 | 14,851 | 7.84% | 0.8290 | 0.3843 |
-| 2024-03 -> 2024-05 | 14,851 | 6.90% | 0.8675 | 0.4125 |
-| 2024-04 -> 2024-06 | 15,710 | 6.29% | 0.8956 | 0.5623 |
+| 2024-03 → 2024-06 | 14,851 | 7.84% | 0.8290 | 0.3843 |
+| 2024-03 → 2024-05 | 14,851 | 6.90% | 0.8675 | 0.4125 |
+| 2024-04 → 2024-06 | 15,710 | 6.29% | 0.8956 | 0.5623 |
 
-The price-only model reaches AUC 0.7474, while the best economic single feature,
-mean price, reaches 0.6522. On the dense-history subsample, Merton reaches AUC
-0.5644 and KMV reaches 0.6270. These subsample results are not directly comparable
-to the full-cohort results because the positive rate falls from 7.84% to 2.10%.
+纯价格模型的 AUC 为 0.7474，最佳经济单特征的 AUC 为 0.6522，对应平均价格。
+在记录密集子样本上，Merton 的 AUC 为 0.5644，KMV 的 AUC 为 0.6270。
+由于子样本正例率从全队列的 7.84% 降至 2.10%，这些结果不能直接与全队列结果比较。
 
-The calibration experiment provides the central downstream result. Across seven
-configurations, the AUC range is 0.0355 while the ECE range is 0.3050. Balanced
-class weights can leave ranking nearly unchanged but inflate mean predicted PD;
-isotonic calibration restores the probability level.
+校准实验给出了关键的下游证据。在七种配置中，AUC 极差为 0.0355，而 ECE 极差
+达到 0.3050。平衡类别权重几乎不改变排序能力，却会抬高平均预测 PD；
+isotonic 校准可以把概率水平恢复到合理区间。
 
 ---
 
-## 6. Experiments and Simulation
+## 6. 实验与仿真
 
-### 6.1 System Performance
+### 6.1 系统性能
 
-`[TODO: Report end-to-end runtime, module-level runtime, and parallel speedup.
-The three nested Python loops in the time-right market simulation are a candidate
-optimization target.]`
+`[TODO: 报告端到端运行时间、模块级运行时间和并行加速比。时权市场模拟中的三重 Python 循环是待优化的候选位置。]`
 
-### 6.2 Monte Carlo and Tranche Losses
+### 6.2 蒙特卡洛与分层损失
 
-`[TODO: Add the hotel and flight Monte Carlo loss distributions, VaR, expected
-loss, and tranche ratings from the finalized engine.]`
+`[TODO: 补充最终引擎得到的酒店与机票蒙特卡洛损失分布、VaR、期望损失和分层评级。]`
 
-The flight pool reported in the method record contains 69 routes and 11 carriers.
-The senior tranche has expected loss near zero and an Aaa-Aa rating, while the
-maximum pool loss is 15.6%, below the 35% subordination protection.
+方法记录中的机票资产池包含 69 条航线和 11 家航司。优先级分层的期望损失接近零，
+评级为 Aaa–Aa；资产池最大损失为 15.6%，低于 35% 的次级保护。
 
-### 6.3 Downstream Effect of PD Calibration
+### 6.3 PD 校准对下游结果的影响
 
-`[TODO: Feed all calibrated PD vectors into the same waterfall and report how
-senior, mezzanine, junior, and equity losses and ratings change.]`
+`[TODO: 将所有经过校准的 PD 向量输入同一现金流瀑布，报告优先级、夹层、劣后和权益分层的损失与评级变化。]`
 
-### 6.4 Ablations
+### 6.4 消融实验
 
-The planned ablations are:
+计划开展以下消融：
 
-- Remove copula tail dependence.
-- Replace the ML PD component with the structural baseline.
-- Change the exit-to-default mapping.
-- Compare full features, no-completeness, and price-only models.
+- 移除 copula 尾部相依。
+- 用结构式基线替代机器学习 PD 组件。
+- 改变从平台退出到违约的映射。
+- 比较全部特征、去除完整度特征和纯价格特征三类模型。
 
 ---
 
-## 7. Discussion and Limitations
+## 7. 讨论与局限
 
-The study has three primary limitations. First, the four-month hotel panel cannot
-support a true temporal out-of-sample test across seasonal or credit cycles.
-Second, platform exit is not the same event as default; the exit-to-default
-mapping remains a sensitivity assumption. Third, the current prototype is an
-offline simulator, not a deployed on-chain system.
+本研究有三项主要局限。第一，四个月的酒店面板不足以支持跨季节或跨信用周期的
+真正时间外样本检验。第二，平台退出并不等于违约，退出到违约的映射仍需敏感性分析。
+第三，当前原型是离线仿真系统，而不是已部署的链上系统。
 
-The structural-model comparison is also limited by coverage. The models require
-dense price histories, and the eligible subsample is safer than the full cohort.
-The correct conclusion is that the structural inputs are weakly informative in
-this setting, not that structural models fail universally.
+结构式模型比较还受到覆盖范围限制。此类模型要求较长的价格历史，而符合条件子样本
+中的酒店整体更安全。本文能够支持的结论是：在该设定下，结构式模型的输入信息很弱；
+不能据此断言结构式模型普遍失效。
 
 ---
 
-## 8. Conclusion
+## 8. 结论
 
-`[TODO: Rewrite after the P1 experiments and tranche results are frozen.]`
+`[TODO: 待 P1 实验和分层结果冻结后重写。]`
 
-FSR securitization couples a service-market mechanism with a credit-risk engine.
-The present work turns that coupling into an executable simulation system and
-shows why probability calibration must be evaluated alongside discrimination.
-The next step is to freeze the feature pipeline, complete the downstream tranche
-experiments, and convert this working draft into a submission-ready manuscript.
+FSR 证券化把服务市场机制与信用风险引擎连接起来。本文将这种连接落实为可执行的
+仿真系统，并说明概率校准必须与判别力一起评估。下一步工作是冻结特征流程、
+完成下游分层实验，并把当前工作稿整理为可投稿版本。
 
 ---
 
-## Data and Code Availability
+## 数据与代码可用性
 
-The hotel price panel, flight aggregates, data dictionary, reference material, and
-P0 scripts are included in this repository. Raw DB1B archives are downloaded on
-demand and are not committed. The original structural-model scripts referenced by
-the P0 experiments remain outside this repository and must be migrated before the
-full experiment can be reproduced from a clean checkout.
+酒店价格面板、机票聚合结果、数据字典、文献材料和 P0 脚本均包含在本仓库中。
+DB1B 原始压缩包按需下载，不纳入版本控制。P0 实验引用的部分原始结构式模型脚本
+仍位于仓库之外；在实现干净克隆后的完整复现之前，需要先迁移这些依赖。
 
-## References
+## 参考文献
 
-The canonical bibliography is [`references.bib`](references.bib). Citation keys in
-this Markdown draft follow Pandoc syntax. DOI-bearing records were checked against
-Crossref; non-DOI historical works and official filings are identified explicitly
-in the bibliography. The final LaTeX export should regenerate and recheck this
-section immediately before submission.
+正式书目见 [`references.bib`](references.bib)。本工作稿采用 Pandoc 引用语法。
+含 DOI 的条目已通过 Crossref 核验；无 DOI 的经典文献和官方文件在书目中明确标注。
+生成最终 LaTeX 稿件时，应在投稿前重新生成并核对参考文献列表。

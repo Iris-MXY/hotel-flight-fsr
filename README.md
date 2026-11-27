@@ -6,8 +6,7 @@
 
 **工作题目**
 
-> *A Simulation System for Future Service Rights Securitization:
-> Architecture, Algorithms, and Machine-Learning Credit Assessment*
+> *面向未来服务权的证券化仿真系统：系统架构、算法与机器学习信用评估*
 
 **论文主张**：FSR 证券化需要可靠的概率违约估计。传统结构式模型在稀疏的酒店
 借款人数据上缺少可观测输入，因此本文构建一个可执行的证券化仿真系统，用真实价格
@@ -19,7 +18,7 @@
 |---|---|---|
 | P0 可行性预实验 | 已完成 | 三队列 AUC 0.8290 到 0.8956，ML PD 路线成立 |
 | P1 数据与特征工程 | 待启动 | 需要冻结特征、队列和验证协议 |
-| 论文骨架 | 已建立 | 英文工作稿位于 `paper/manuscript.md` |
+| 论文骨架 | 已建立 | 中文工作稿位于 `paper/manuscript.md` |
 | 仿真实验 | 部分完成 | 机票池已有结果，酒店瀑布与下游评级待补 |
 | 投稿目标 | 待定 | 当前按 CS/EI 9 到 10 页仿真系统论文设计 |
 

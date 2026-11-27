@@ -1,7 +1,7 @@
 """
-Extract real route-level statistics for flight FSR pool construction.
-Reads a representative quarter (2024 Q2), computes per-route stats,
-outputs CSV with enough detail for stratified sampling.
+提取真实航线统计量，用于构建机票 FSR 资产池。
+读取一个代表性季度（2024 年第二季度），计算每条航线的统计量，
+并输出可用于分层抽样的 CSV 文件。
 """
 import pandas as pd, numpy as np, json, time, sys
 from collections import defaultdict
@@ -13,20 +13,20 @@ OUT = Path(r"C:\Users\weida\Desktop\酒店研究\output")
 def log(msg):
     print(msg, flush=True)
 
-log("Extracting real route statistics for FSR pool construction...")
-log("Using 2024 Q2 as representative quarter\n")
+log("正在提取用于 FSR 资产池构建的真实航线统计量……")
+log("采用 2024 年第二季度作为代表性季度\n")
 
-# Find 2024 Q2
+# 查找 2024 年第二季度文件
 import glob
 files = sorted(glob.glob(str(BASE / 'Origin_and_Destination_Survey_DB1BMarket_2024_2/Origin_and_Destination_Survey_DB1BMarket_2024_2.csv')))
 if not files:
-    log("ERROR: 2024 Q2 file not found")
+    log("错误：未找到 2024 年第二季度文件")
     sys.exit(1)
 
 fpath = files[0]
-log(f"Source: {fpath}")
+log(f"数据源：{fpath}")
 
-# Streaming route aggregation
+# 流式航线聚合
 route_data = defaultdict(lambda: {'n': 0, 'sum_fare': 0.0, 'sum2_fare': 0.0,
                                     'sum_pax': 0.0, 'carriers': set(),
                                     'sum_dist': 0.0, 'sum_coupons': 0.0})
@@ -49,14 +49,14 @@ for chunk in pd.read_csv(fpath, chunksize=200000, low_memory=False,
         d['sum_dist'] += row['MktMilesFlown']
         d['sum_coupons'] += row['MktCoupons']
     if chunk_n % 10 == 0:
-        log(f"  {chunk_n*200000/1e6:.1f}M rows, {len(route_data):,} routes...")
+        log(f"  已处理 {chunk_n*200000/1e6:.1f} 百万行，{len(route_data):,} 条航线……")
 
-log(f"\n  Total: {len(route_data):,} routes extracted ({time.time()-t0:.0f}s)")
+log(f"\n  共提取 {len(route_data):,} 条航线（{time.time()-t0:.0f} 秒）")
 
-# Compile to DataFrame
+# 汇总为 DataFrame
 routes = []
 for (origin, dest), d in route_data.items():
-    if d['n'] < 20:  # minimum observations
+    if d['n'] < 20:  # 最小观测数
         continue
     mean_fare = d['sum_fare'] / d['n']
     var_fare = max(0, d['sum2_fare'] / d['n'] - mean_fare**2)
@@ -65,7 +65,7 @@ for (origin, dest), d in route_data.items():
     avg_dist = d['sum_dist'] / d['n']
     avg_coupons = d['sum_coupons'] / d['n']
 
-    # Distance band
+    # 距离档
     if avg_dist <= 500:
         dist_band = 'short'
     elif avg_dist <= 1500:
@@ -89,23 +89,23 @@ for (origin, dest), d in route_data.items():
     })
 
 df = pd.DataFrame(routes)
-# Filter extreme CV
+# 过滤极端变异系数
 df = df[df['fare_cv'] < 1.5]
-# Filter very low fares (data errors)
+# 过滤异常低票价（疑似数据错误）
 df = df[df['mean_fare'] >= 50]
 
-# Save
+# 保存
 csv_path = OUT / 'flight_routes_real.csv'
 df.to_csv(csv_path, index=False)
 
-log(f"\nSaved {len(df):,} routes to {csv_path}")
-log(f"\nRoute statistics:")
-log(f"  Mean fare:   ${df['mean_fare'].mean():.0f} (median: ${df['mean_fare'].median():.0f})")
-log(f"  Fare CV:     mean={df['fare_cv'].mean():.3f}, median={df['fare_cv'].median():.3f}")
-log(f"  N carriers:  mean={df['n_carriers'].mean():.1f}")
-log(f"  Distance bands: short={(df['dist_band']=='short').sum():,}, "
-    f"medium={(df['dist_band']=='medium').sum():,}, long={(df['dist_band']=='long').sum():,}")
-log(f"  Top 5 routes by pax:")
+log(f"\n已将 {len(df):,} 条航线保存到 {csv_path}")
+log(f"\n航线统计：")
+log(f"  平均票价：${df['mean_fare'].mean():.0f}（中位数：${df['mean_fare'].median():.0f}）")
+log(f"  票价 CV：均值={df['fare_cv'].mean():.3f}，中位数={df['fare_cv'].median():.3f}")
+log(f"  航司数量：均值={df['n_carriers'].mean():.1f}")
+log(f"  距离档：短程={(df['dist_band']=='short').sum():,}，"
+    f"中程={(df['dist_band']=='medium').sum():,}，远程={(df['dist_band']=='long').sum():,}")
+log(f"  乘客量前 5 条航线：")
 for _, r in df.nlargest(5, 'total_pax').iterrows():
-    log(f"    {r['route']}: {r['total_pax']:,.0f} pax, ${r['mean_fare']:.0f}, CV={r['fare_cv']:.3f}, {r['n_carriers']} carriers")
-log("Done.")
+    log(f"    {r['route']}：{r['total_pax']:,.0f} 名乘客，${r['mean_fare']:.0f}，CV={r['fare_cv']:.3f}，{r['n_carriers']} 家航司")
+log("处理完成。")
