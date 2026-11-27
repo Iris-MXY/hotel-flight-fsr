@@ -8,10 +8,10 @@
 
 **当前：已收录 17 篇（2021–2023 共 8 篇，2024–2026 共 9 篇）。**
 
-另有 **25 条经 DOI/OpenAlex 核验的核心文献元数据**，见
-[`hotel_flight_fsr.bib`](hotel_flight_fsr.bib)。同一组条目已导入 Zotero 的
-**我的文库 → 酒店与机票 FSR** 分类；订阅制、无公开版本的条目只保留规范元数据和
-DOI，不绕过出版方权限。
+论文统一书目见 [`paper/references.bib`](../paper/references.bib)，当前共 **71 条**；
+其中 [`hotel_flight_fsr.bib`](hotel_flight_fsr.bib) 保留最早的 25 条核心子集。
+完整书目已导入 Zotero 的 **我的文库 → 酒店与机票 FSR** 分类。订阅制、
+无公开版本的条目只保留规范元数据和 DOI，不绕过出版方权限。
 
 ---
 
@@ -60,10 +60,11 @@ DOI，不绕过出版方权限。
 ## 四、Zotero 与规范书目
 
 - Zotero 分类：`我的文库 → 酒店与机票 FSR`
-- 顶层文献记录：25 条
-- 带 PDF 附件：8 条
-- 可复现书目：`papers/hotel_flight_fsr.bib`
-- 元数据核验日期：2026-10-30
+- 顶层文献记录：71 条
+- 带本地 PDF 附件：17 条
+- 完整可复现书目：`paper/references.bib`
+- 核心子集书目：`papers/hotel_flight_fsr.bib`
+- 最近核验日期：2026-11-27
 - 核验来源：Crossref；预印本 *Miles as Capital* 使用 OpenAlex 核对作者和年份
 
 重新导入时，在 Zotero 中选中该分类，再通过连接器导入上述 BibTeX 文件。

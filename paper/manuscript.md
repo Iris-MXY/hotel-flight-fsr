@@ -5,7 +5,8 @@
 > Working draft. This Markdown file is the canonical manuscript source during P0/P1.
 > The submission version will be exported to LaTeX after the experiment protocol is frozen.
 >
-> Status: outline plus draft text. `[TODO: ...]` marks missing evidence or citations.
+> Status: outline plus draft text. `[TODO: ...]` marks missing evidence or
+> unresolved implementation details.
 
 **Keywords:** financial technology; asset securitization; Monte Carlo simulation;
 credit risk; machine learning; probability calibration
@@ -37,7 +38,7 @@ connecting machine learning to securitization decisions.
 
 ## 1. Introduction
 
-Hotel room-nights and airline seats are perishable inventory. Once the service
+Hotel room-nights and airline seats are perishable inventory [@talluri2004theory]. Once the service
 window passes, unused capacity has no value. Platforms and operators commonly sell
 this capacity through uncertain future demand, while small suppliers face working
 capital constraints. FSR provides a possible financing mechanism: a supplier issues
@@ -47,11 +48,14 @@ allocates that claim to users and investors.
 The economic mechanism alone is not enough. A securitized pool needs a loss
 distribution, a tranche structure, and a defensible estimate of default
 probability. Structural credit models such as Merton distance-to-default and KMV
-are natural baselines, but they require an asset-value process, a debt boundary,
-and a sufficiently informative volatility signal. For individual hotels observed
-through an online travel platform, these variables are absent. Our preliminary
-experiments show that the available volatility signal is close to random on the
-full cohort, and the structural baselines concentrate at the upper PD bound.
+are natural baselines [@merton1974pricing; @kealhofer2003quantifying], but they
+require an asset-value process, a debt boundary, and a sufficiently informative
+volatility signal. Prior validation also shows that distance-to-default does not
+translate mechanically into a reliable default forecast
+[@bharath2008forecasting]. For individual hotels observed through an online travel
+platform, these variables are absent. Our preliminary experiments show that the
+available volatility signal is close to random on the full cohort, and the
+structural baselines concentrate at the upper PD bound.
 
 This paper makes three contributions:
 
@@ -63,9 +67,6 @@ This paper makes three contributions:
 3. We show that probability calibration, rather than discrimination alone,
    determines downstream tranche risk and rating behavior.
 
-`[TODO: Add the frequent-flyer securitization precedent and the overbooking
-literature in the introduction.]`
-
 ---
 
 ## 2. Related Work
@@ -73,39 +74,52 @@ literature in the introduction.]`
 ### 2.1 Structural Credit Models
 
 Merton models treat equity as a call option on the firm's assets and derive a
-distance-to-default from asset value, debt, and volatility. KMV extends the same
-logic with an empirical default boundary. These models are widely used for listed
-firms but require inputs that are not observed for platform merchants.
-
-`[TODO: Cite Merton (1974), KMV, and work on structural models with sparse data.]`
+distance-to-default from asset value, debt, and volatility [@merton1974pricing].
+KMV extends the same logic with an empirical default boundary
+[@kealhofer2003quantifying]. These models are widely used for listed firms, but
+their predictive usefulness depends on input quality and calibration; out-of-sample
+evidence for the Merton distance-to-default model is mixed
+[@bharath2008forecasting]. Platform merchants rarely expose the required debt
+boundary and long asset-price history.
 
 ### 2.2 Machine Learning for Default Prediction
 
 Tree ensembles and deep models have been applied extensively to credit scoring and
-bankruptcy prediction. Most studies emphasize ranking metrics such as AUC, while
-the downstream financial application depends on the absolute probability.
-
-`[TODO: Cite logistic-tree credit scoring, credit-risk ML, and deep distress
-prediction.]`
+bankruptcy prediction [@dumitrescu2022creditscoring;
+@yang2023creditdnn; @chen2024imbalanced; @benjabeur2023xgboost;
+@elhoseny2025distress]. More recent work combines ensemble or causal machine
+learning with model explanation [@aruleba2024ensemblecredit;
+@liu2024causalcredit], while model-risk studies emphasize that predictive
+performance must be evaluated in the context of the financial decision
+[@alonso2022modelrisk]. Most credit-scoring studies still emphasize ranking
+metrics such as AUC, whereas tranche losses depend on the absolute probability.
 
 ### 2.3 Probability Calibration
 
 Brier scores, reliability diagrams, and expected calibration error measure whether
-predicted probabilities match observed frequencies. Rebalancing can improve a
-classifier's apparent minority-class sensitivity while damaging probability
-calibration.
-
-`[TODO: Cite classifier calibration survey, resampling and calibration, and
-distribution-shift calibration.]`
+predicted probabilities match observed frequencies [@brier1950verification;
+@silvafilho2023calibration]. Platt scaling and isotonic regression are common
+post-processing approaches [@platt1999probabilistic; @zadrozny2002transforming;
+@niculescu2005predicting], and modern deep models can be miscalibrated despite
+high accuracy [@guo2017calibration]. Rebalancing can improve a classifier's
+apparent minority-class sensitivity while damaging probability calibration
+[@vandengoorbergh2022imbalance; @piccininni2024resampling]. Calibration may also
+deteriorate under distribution shift [@xiao2025calibrationshift].
 
 ### 2.4 Tokenized Assets and Service-Right Securitization
 
 Tokenized real-world assets and frequent-flyer-backed financing are the closest
-practical precedents for FSR. Overbooking and revenue-management models provide
-the operational constraints under which future capacity is sold.
-
-`[TODO: Cite AAdvantage, MileagePlus, SkyMiles, tokenized real estate, and
-overbooking.]`
+practical precedents for FSR [@schwiderowski2023nft;
+@kreppmeier2023securitytokens; @berglund2025miles]. Airline loyalty programs have
+become standalone businesses whose mile liabilities and partner cash flows can be
+valued and financed [@deboer2018standalone; @gao2020valuingmiles]. Public filings
+show that AAdvantage program assets have secured senior debt
+[@american2021aadvantage], while Delta and United report material prepayments and
+pledged loyalty-program assets [@delta2015skymiles; @united2013mileageplus].
+Overbooking and capacity control provide the operational constraints under which
+future capacity is sold [@beckmann1958decision; @rothstein1971airlineoverbooking;
+@littlewood1972forecasting; @talluri2004theory; @pimentel2019hoteloverbooking;
+@schwartz2025hoteloverbooking].
 
 ---
 
@@ -143,18 +157,18 @@ engine allocates receipts across senior, mezzanine, junior, and equity tranches.
 
 ### 4.1 A1: Dependent Default Sampling
 
-We sample latent variables through a copula and map them to default times. The
-latent construction must preserve unit variance:
+We sample latent variables through a copula and map them to default times
+[@li2000defaultcorrelation]. The latent construction must preserve unit variance:
 
 ```text
 u = c * Z * w + epsilon * (1 - w),    with Var(u) = 1
 ```
 
 If `Var(u)` is not one, `Phi(u)` is not uniformly distributed and the realized
-default rate is systematically biased. This normalization is a core implementation
-requirement, not a cosmetic detail.
-
-`[TODO: Add pseudocode and the measured bias for p = 0.056 and p = 0.001.]`
+default rate is systematically biased. In our implementation audit, omitting the
+normalization produced roughly 3x and 42x deviations from the requested default
+rate at `p = 0.056` and `p = 0.001`, respectively. This normalization is therefore
+a core implementation requirement, not a cosmetic detail.
 
 ### 4.2 A2: Cash-Flow Waterfall
 
@@ -196,7 +210,10 @@ is a measurable proxy, not a verified legal default.
 
 The hotel panel contains 1,707,918 hotel-day records and 16,257 hotels from March
 to June 2024 in Chengdu. The main cohort contains 14,851 hotels with a 7.84% exit
-rate. Rolling cohorts are used as a stability check.
+rate. Rolling cohorts are used as a stability check. The price features follow the
+booking-curve and demand-forecasting literature [@viverit2023hotelbooking;
+@rekiek2024bookingtrends; @henriques2024hotelreview;
+@contessi2024hoteloccupancy].
 
 ### 5.3 Features
 
@@ -218,15 +235,18 @@ model.
 
 ### 5.4 Models and Baselines
 
-The main models are random forest and LightGBM, with logistic regression as a
-statistical baseline and a GRU as a sequence-model extension. Merton and KMV are
-structural baselines on the dense-history subsample.
+The main models are random forest and LightGBM [@breiman2001randomforest;
+@ke2017lightgbm], with logistic regression as a statistical baseline and a GRU as
+a sequence-model extension [@cho2014gru]. Merton and KMV are structural baselines
+on the dense-history subsample; the structural volatility input is estimated with
+a GARCH baseline [@bollerslev1986garch].
 
 ### 5.5 Evaluation
 
 We report AUC and PR-AUC for discrimination, and Brier score, expected calibration
-error, and reliability diagrams for calibration. The downstream experiment feeds
-each calibrated PD vector into the same cash-flow waterfall.
+error (ECE), and reliability diagrams for calibration [@brier1950verification;
+@naeini2015ece]. The downstream experiment feeds each calibrated PD vector into
+the same cash-flow waterfall.
 
 ### 5.6 Preliminary Results
 
@@ -318,5 +338,8 @@ full experiment can be reproduced from a clean checkout.
 
 ## References
 
-`[TODO: Create paper/references.bib and map the PDFs under papers/ to citation
-keys. Do not submit this section until every DOI and venue is verified.]`
+The canonical bibliography is [`references.bib`](references.bib). Citation keys in
+this Markdown draft follow Pandoc syntax. DOI-bearing records were checked against
+Crossref; non-DOI historical works and official filings are identified explicitly
+in the bibliography. The final LaTeX export should regenerate and recheck this
+section immediately before submission.

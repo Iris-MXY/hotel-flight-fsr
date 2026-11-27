@@ -10,7 +10,7 @@
 | 工作题目 | *A Simulation System for Future Service Rights Securitization: Architecture, Algorithms, and Machine-Learning Credit Assessment* |
 | 目标类型 | CS/EI 仿真系统论文，约 9 到 10 页 |
 | 当前阶段 | P0 已完成，P1 数据与特征工程待启动 |
-| 稿件状态 | 英文工作稿骨架已建立，图表和参考文献待补 |
+| 稿件状态 | 英文工作稿与引用框架已建立，图表和实验证据待补 |
 | 数据状态 | 酒店价格面板和 DB1B 航线聚合已完成 |
 | 主要风险 | 四个月窗口、退出到违约的代理标签、历史脚本未完全迁入本仓库 |
 
@@ -23,6 +23,8 @@
 | [当前方法](../docs/PAPER_METHODS.md) | 系统、算法和实验设计 |
 | [旧方法档案](../docs/OLD_METHODS.md) | 机制设计路线、Merton/KMV 失败原因和审稿口径 |
 | [改稿方案](../docs/reference/REVISION_PLAN.md) | 逐节改造计划和 P0 结果 |
+| [参考文献库](references.bib) | 71 条投稿候选书目，正文使用 Pandoc 引用键 |
+| [文献覆盖核对](reference_coverage.md) | 主题与锚点文献、剩余证据缺口 |
 | [数据字典](../DATA_DICTIONARY.md) | 字段、规模、校验和与来源 |
 
 ## 贡献台账
@@ -40,8 +42,8 @@
 | 章节 | 状态 | 下一步 |
 |---|---|---|
 | Abstract | 草稿 | 补最终仿真结果，压缩到 250 词左右 |
-| 1 Introduction | 草稿 | 补常旅客证券化与超售文献 |
-| 2 Related Work | 提纲 | 建立正式 BibTeX 条目 |
+| 1 Introduction | 草稿 | 常旅客证券化与超售引用已补，待实验冻结后压缩 |
+| 2 Related Work | 草稿 | 主题引用已建立，待按目标会议页数压缩 |
 | 3 Problem and System | 草稿 | 补系统架构图和状态流 |
 | 4 Algorithms | 草稿 | 补伪代码、复杂度和并行加速比 |
 | 5 Machine-Learning PD | 草稿 | 冻结 P1 特征和验证协议 |
@@ -80,4 +82,4 @@
 2. 完成 P1 的 `features.py` 和 `build_dataset.py`，冻结队列与特征清单。
 3. 生成校准曲线、损失分布和并行加速比三组主图。
 4. 把机票蒙特卡洛结果补入正文，并统一酒店与机票的实验口径。
-5. 建立正式参考文献库，把 PDF 文件映射到 BibTeX 键。
+5. 审阅 `references.bib` 的最终引用集合，并同步后续实验新增文献。

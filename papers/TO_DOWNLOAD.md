@@ -3,6 +3,9 @@
 用法：点 **DOI** 打开正式页面（登录且有订阅时可直接下 PDF），或点 **Scholar**
 在谷歌学术里找可下载版本。下好后按「建议文件名」命名并存进 `papers/` 即可。
 
+当前状态：下表文献的规范元数据均已进入 [`paper/references.bib`](../paper/references.bib)
+和 Zotero 的“酒店与机票 FSR”分类。本文件继续用于跟踪仍缺本地 PDF 的条目。
+
 > 已完成：`2021_credit_scoring_logistic_tree`、`2023_interpretable_ml_credit_scoring`
 
 ---
